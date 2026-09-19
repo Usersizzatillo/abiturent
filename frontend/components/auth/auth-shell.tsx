@@ -18,7 +18,7 @@ function Logo({ size = 34 }: { size?: number }) {
   return (
     <Link href="/" aria-label="Abiturend home">
       <span
-        className="flex items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-hover text-primary-foreground shadow-raised"
+        className="flex items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-hover text-primary-foreground shadow-raised"
         style={{ height: size, width: size }}
       >
         <svg width={size * 0.55} height={size * 0.55} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -62,9 +62,9 @@ export function AuthShell({
         </div>
 
         <div className="relative mt-auto flex flex-col gap-8">
-          <h1 className="text-4xl font-bold leading-tight tracking-tight xl:text-5xl">
+          <h1 className="text-4xl font-extrabold leading-tight tracking-tight xl:text-5xl">
             {landing("heroTitle")}
-            <span className="text-gradient mt-1 block text-xl font-semibold xl:text-2xl">
+            <span className="text-gradient mt-2 block font-serif text-xl font-medium italic xl:text-2xl">
               {landing("heroHighlight")}
             </span>
           </h1>
@@ -99,7 +99,7 @@ export function AuthShell({
           <Logo size={44} />
         </div>
         <div className={cn("w-full max-w-md", className)}>
-          <div className="card p-8" style={{ boxShadow: "var(--shadow-raised)" }}>
+          <div className="card rounded-3xl p-8" style={{ boxShadow: "var(--shadow-raised)" }}>
             <div className="mb-6 text-center">
               <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
               {subtitle ? (

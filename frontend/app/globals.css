@@ -8,44 +8,48 @@
    ============================================================= */
 :root {
   /* Surfaces */
-  --background: #f7f8fa;
+  --background: #f7f9ff;
   --surface: #ffffff;
   --surface-raised: #ffffff;
-  --surface-subtle: #f1f3f7;
+  --surface-subtle: #eef2fc;
 
   /* Text */
-  --foreground: #101828;
-  --muted: #475467;
-  --subtle: #98a2b3;
+  --foreground: #0b1b3f;
+  --muted: #4a5a7a;
+  --subtle: #8b98b8;
 
   /* Borders */
-  --border: #e4e7ec;
-  --border-strong: #d0d5dd;
+  --border: #e4e9f5;
+  --border-strong: #cbd4e9;
 
-  /* Brand — indigo (education + trust) */
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
+  /* Brand — vivid Education blue (EduThink) */
+  --primary: #2458ff;
+  --primary-hover: #1b43d0;
   --primary-foreground: #ffffff;
-  --primary-soft: #eef2ff;
-  --primary-muted: #d9ddff;
+  --primary-soft: #e9efff;
+  --primary-muted: #c6d5ff;
+
+  /* EduThink warm accent */
+  --accent: #ffb020;
+  --accent-soft: #fff7e6;
 
   /* Status */
-  --success: #079455;
-  --success-soft: #ecfdf3;
-  --warning: #dc6803;
-  --warning-soft: #fff8eb;
+  --success: #0e9f6e;
+  --success-soft: #e7f8f0;
+  --warning: #e89b0c;
+  --warning-soft: #fff7e0;
   --danger: #d92d20;
   --danger-soft: #fef3f2;
-  --info: #175cd3;
-  --info-soft: #eff8ff;
+  --info: #2563eb;
+  --info-soft: #eff6ff;
 
   /* Focus ring */
-  --ring: #4f46e5;
+  --ring: #2458ff;
 
-  /* Shadows */
-  --shadow-card: 0 1px 2px 0 rgb(16 24 40 / 0.05);
-  --shadow-raised: 0 4px 10px -2px rgb(16 24 40 / 0.08), 0 2px 4px -2px rgb(16 24 40 / 0.06);
-  --shadow-popover: 0 12px 24px -4px rgb(16 24 40 / 0.14), 0 4px 8px -4px rgb(16 24 40 / 0.06);
+  /* Shadows — soft, airy */
+  --shadow-card: 0 1px 2px 0 rgb(11 27 63 / 0.04);
+  --shadow-raised: 0 10px 28px -8px rgb(11 27 63 / 0.12), 0 4px 12px -4px rgb(11 27 63 / 0.08);
+  --shadow-popover: 0 20px 48px -12px rgb(11 27 63 / 0.18), 0 8px 20px -8px rgb(11 27 63 / 0.1);
 
   color-scheme: light;
 }
@@ -54,38 +58,41 @@
    DESIGN TOKENS — Dark theme (intentionally designed, not inverted)
    ============================================================= */
 .dark {
-  --background: #0b1220;
-  --surface: #111a2e;
-  --surface-raised: #16213a;
-  --surface-subtle: #0e1626;
+  --background: #070c1d;
+  --surface: #0d1630;
+  --surface-raised: #131f42;
+  --surface-subtle: #0a1124;
 
-  --foreground: #eef2f8;
-  --muted: #9aa8bd;
-  --subtle: #64748b;
+  --foreground: #edf2ff;
+  --muted: #a3b1d4;
+  --subtle: #6b7aa3;
 
-  --border: #1f2b44;
-  --border-strong: #2c3b5c;
+  --border: #1e2a4b;
+  --border-strong: #2d3b66;
 
-  --primary: #6366f1;
-  --primary-hover: #7c7ff3;
+  --primary: #4a74ff;
+  --primary-hover: #6a8bff;
   --primary-foreground: #ffffff;
-  --primary-soft: #1c2140;
-  --primary-muted: #2c3066;
+  --primary-soft: #17214a;
+  --primary-muted: #26335e;
 
-  --success: #32d583;
-  --success-soft: #0f2a1e;
-  --warning: #fdb022;
-  --warning-soft: #2b2110;
+  --accent: #ffc44d;
+  --accent-soft: #2b2310;
+
+  --success: #34d399;
+  --success-soft: #0e2a20;
+  --warning: #fbbf24;
+  --warning-soft: #2b2310;
   --danger: #f97066;
   --danger-soft: #2c1614;
-  --info: #53b1fd;
+  --info: #60a5fa;
   --info-soft: #0c2233;
 
-  --ring: #6366f1;
+  --ring: #4a74ff;
 
   --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.4);
-  --shadow-raised: 0 4px 12px -2px rgb(0 0 0 / 0.5);
-  --shadow-popover: 0 12px 28px -6px rgb(0 0 0 / 0.6);
+  --shadow-raised: 0 8px 20px -6px rgb(0 0 0 / 0.5);
+  --shadow-popover: 0 20px 48px -12px rgb(0 0 0 / 0.6);
 
   color-scheme: dark;
 }
@@ -94,8 +101,9 @@
    Tailwind token mapping
    ============================================================= */
 @theme inline {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-instrument), ui-serif, Georgia, serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
 
   --color-background: var(--background);
   --color-surface: var(--surface);
@@ -115,6 +123,9 @@
   --color-primary-soft: var(--primary-soft);
   --color-primary-muted: var(--primary-muted);
 
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);
   --color-warning: var(--warning);
@@ -130,11 +141,12 @@
   --shadow-raised: var(--shadow-raised);
   --shadow-popover: var(--shadow-popover);
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
-  --radius-2xl: 26px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-2xl: 30px;
+  --radius-3xl: 42px;
 }
 
 /* =============================================================
@@ -151,7 +163,7 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -400,19 +412,26 @@ body {
     to { opacity: 1; transform: translateY(0); }
   }
 
-  /* Landing — aurora background */
+  /* Landing — aurora background (EduThink: airy blue + amber glow) */
   .hero-bg {
-    background:
-      radial-gradient(58rem 30rem at 80% -10%, color-mix(in srgb, var(--primary) 16%, transparent), transparent 60%),
-      radial-gradient(48rem 28rem at 8% 4%, color-mix(in srgb, var(--info) 12%, transparent), transparent 55%),
-      var(--background);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--primary-soft) 55%, transparent) 0%, var(--background) 100%);
   }
   .hero-grid {
     background-image:
-      linear-gradient(to right, color-mix(in srgb, var(--border) 50%, transparent) 1px, transparent 1px),
-      linear-gradient(to bottom, color-mix(in srgb, var(--border) 50%, transparent) 1px, transparent 1px);
+      linear-gradient(to right, color-mix(in srgb, var(--border) 55%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in srgb, var(--border) 55%, transparent) 1px, transparent 1px);
     background-size: 48px 48px;
     mask-image: radial-gradient(70% 60% at 50% 0%, black 30%, transparent 75%);
+  }
+  .hero-glow {
+    background:
+      radial-gradient(42rem 24rem at 78% -8%, color-mix(in srgb, var(--primary) 20%, transparent), transparent 62%),
+      radial-gradient(30rem 20rem at 8% 12%, color-mix(in srgb, var(--accent) 24%, transparent), transparent 58%);
+  }
+  .accent-blob {
+    background:
+      radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 70%),
+      radial-gradient(circle at 70% 70%, color-mix(in srgb, var(--primary) 26%, transparent), transparent 70%);
   }
 
   /* Landing — image lift + glow */
@@ -455,7 +474,7 @@ body {
 
   /* Gradient text */
   .text-gradient {
-    background: linear-gradient(100deg, var(--primary) 10%, var(--info) 55%, var(--primary) 100%);
+    background: linear-gradient(95deg, var(--primary) 5%, var(--info) 55%, var(--accent) 105%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;

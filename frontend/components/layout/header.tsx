@@ -10,16 +10,18 @@ export function Header() {
   const t = useTranslations("nav");
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+    <header className="sticky top-3 z-40 px-4 sm:px-6">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 rounded-full border border-border bg-surface/85 px-4 shadow-raised backdrop-blur-md sm:px-5 dark:bg-surface/80">
+        <Link href="/" className="flex shrink-0 items-center gap-2">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-hover text-primary-foreground shadow-raised">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
               <path d="M6 12v5c3 3 9 3 12 0v-5" />
             </svg>
           </span>
-          <span className="text-lg font-bold tracking-tight">Abiturend</span>
+          <span className="text-lg font-extrabold tracking-tight">
+            Abiturend
+          </span>
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm font-medium text-muted md:flex">

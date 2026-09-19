@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Instrument_Serif, Plus_Jakarta_Sans } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
@@ -7,13 +7,15 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import "../globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const instrument = Instrument_Serif({
+  variable: "--font-instrument",
+  weight: "400",
+  style: ["normal", "italic"],
   subsets: ["latin"],
 });
 
@@ -53,7 +55,7 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${jakarta.variable} ${instrument.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-background font-sans">
         <ThemeProvider

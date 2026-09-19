@@ -73,6 +73,7 @@ export default async function LandingPage({
         {/* ============ HERO ============ */}
         <section className="hero-bg relative overflow-hidden">
           <div aria-hidden className="hero-grid pointer-events-none absolute inset-0" />
+          <div aria-hidden className="hero-glow pointer-events-none absolute inset-x-0 top-0 h-[36rem]" />
           <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-16 text-center sm:px-6 sm:pt-24">
             <Reveal>
               <span className="badge badge-primary gap-2 px-4 py-1.5 text-sm">
@@ -80,22 +81,29 @@ export default async function LandingPage({
                 {t("badge")}
               </span>
             </Reveal>
-            <Reveal delay={80}>
-              <h1 className="mx-auto mt-6 max-w-4xl text-balance text-4xl font-bold leading-[1.08] tracking-tight sm:text-6xl">
+            <Reveal delay={60}>
+              <p className="mt-6 font-serif text-xl italic text-muted sm:text-2xl">
+                {t("heroTagline")}
+              </p>
+            </Reveal>
+            <Reveal delay={100}>
+              <h1 className="mx-auto mt-3 max-w-4xl text-balance text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-7xl">
                 {t("heroTitle")}
-                <span className="text-gradient mt-2 block text-2xl font-semibold sm:text-4xl">
-                  {t("heroHighlight")}
-                </span>
               </h1>
             </Reveal>
             <Reveal delay={160}>
-              <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-muted sm:text-xl">
+              <span className="text-gradient mt-4 block font-serif text-2xl font-medium italic leading-snug sm:text-4xl">
+                {t("heroHighlight")}
+              </span>
+            </Reveal>
+            <Reveal delay={220}>
+              <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-muted sm:text-xl">
                 {t("heroSubtitle")}
               </p>
             </Reveal>
-            <Reveal delay={240}>
+            <Reveal delay={280}>
               <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                <Link href="/register" className="btn btn-primary btn-lg w-full sm:w-auto">
+                <Link href="/register" className="btn btn-primary btn-lg w-full shadow-raised sm:w-auto">
                   <Icon name="rocket" size={18} />
                   {t("ctaStart")}
                 </Link>
@@ -111,8 +119,9 @@ export default async function LandingPage({
           </div>
 
           {/* Product shot */}
-          <Reveal delay={320} className="mx-auto max-w-5xl px-4 sm:px-6">
-            <div className="lift relative overflow-hidden rounded-2xl border border-border-strong bg-surface shadow-popover">
+          <Reveal delay={340} className="relative mx-auto max-w-5xl px-4 sm:px-6">
+            <div aria-hidden className="accent-blob pointer-events-none absolute -inset-8 -z-10 rounded-[3rem] opacity-70 blur-2xl" />
+            <div className="lift relative overflow-hidden rounded-3xl border border-border-strong bg-surface shadow-popover ring-1 ring-black/5 dark:ring-white/10">
               <ExamAppMockup className="h-auto w-full" />
             </div>
           </Reveal>
@@ -121,13 +130,13 @@ export default async function LandingPage({
         {/* ============ STATS ============ */}
         <section className="mx-auto -mt-0 max-w-7xl px-4 pb-4 pt-10 sm:px-6">
           <Reveal>
-            <div className="grid grid-cols-2 gap-4 rounded-2xl border border-border bg-surface p-4 shadow-card sm:grid-cols-4 sm:p-6">
-              {STATS.map((s) => (
+            <div className="grid grid-cols-2 gap-4 rounded-3xl border border-border bg-surface p-4 shadow-raised sm:grid-cols-4 sm:p-6">
+              {STATS.map((s, i) => (
                 <div key={s.key} className="flex flex-col items-center px-2 py-3 text-center">
-                  <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft text-primary">
+                  <div className={`mb-2 flex h-10 w-10 items-center justify-center rounded-2xl ${i % 2 ? "bg-accent-soft text-accent" : "bg-primary-soft text-primary"}`}>
                     <Icon name={s.icon} size={19} />
                   </div>
-                  <p className="text-2xl font-bold tabular-nums">{s.value}</p>
+                  <p className="text-2xl font-extrabold tabular-nums">{s.value}</p>
                   <p className="text-sm text-muted">{t(s.key)}</p>
                 </div>
               ))}
@@ -148,7 +157,7 @@ export default async function LandingPage({
           </Reveal>
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <Reveal>
-              <div className="lift overflow-hidden rounded-2xl border border-border-strong bg-surface shadow-raised">
+              <div className="lift overflow-hidden rounded-3xl border border-border-strong bg-surface shadow-raised">
                 <StudyMockup className="h-auto w-full" />
               </div>
             </Reveal>
@@ -190,7 +199,7 @@ export default async function LandingPage({
           <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6">
             <div className="grid items-center gap-12 lg:grid-cols-2">
               <Reveal className="lg:order-2">
-                <div className="lift overflow-hidden rounded-2xl border border-border-strong bg-surface shadow-raised">
+                <div className="lift overflow-hidden rounded-3xl border border-border-strong bg-surface shadow-raised">
                   <AnalyticsMockup className="h-auto w-full" />
                 </div>
               </Reveal>
@@ -239,8 +248,8 @@ export default async function LandingPage({
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {FEATURES.map((f, i) => (
               <Reveal key={f.key} delay={i * 90}>
-                <div className="card card-hover group h-full p-6">
-                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary-soft text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                <div className="card card-hover group h-full rounded-3xl p-6">
+                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-soft text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                     <Icon name={f.icon} />
                   </div>
                   <h3 className="mb-2 font-semibold">{t(`${f.feature}Title`)}</h3>
@@ -267,7 +276,7 @@ export default async function LandingPage({
               />
               {([1, 2, 3] as const).map((step, i) => (
                 <Reveal key={step} delay={i * 120}>
-                  <div className="card relative p-7 text-center">
+                  <div className="card relative rounded-3xl p-7 text-center">
                     <span className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-hover text-2xl font-bold text-primary-foreground shadow-raised">
                       {step}
                     </span>
@@ -285,6 +294,7 @@ export default async function LandingPage({
           <Reveal>
             <div className="hero-bg relative overflow-hidden rounded-3xl border border-border p-10 text-center sm:p-16">
               <div aria-hidden className="hero-grid pointer-events-none absolute inset-0 opacity-70" />
+              <div aria-hidden className="accent-blob pointer-events-none absolute -inset-16 opacity-60 blur-3xl" />
               <div className="relative flex flex-col items-center gap-6">
                 <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-hover text-primary-foreground shadow-raised">
                   <Icon name="layers" size={26} />
