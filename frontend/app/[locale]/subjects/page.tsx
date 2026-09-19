@@ -58,9 +58,9 @@ export default function SubjectsPage() {
       <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6">
         {/* Header */}
         <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
-            <p className="text-muted">{t("subtitle")}</p>
+          <div className="flex flex-col gap-1.5">
+            <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{t("title")}</h1>
+            <p className="font-serif text-lg italic text-muted">{t("subtitle")}</p>
           </div>
           {subjects ? (
             <span className="badge badge-neutral self-start px-3 py-1.5">

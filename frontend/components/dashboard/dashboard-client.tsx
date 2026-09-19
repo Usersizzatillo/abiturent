@@ -79,17 +79,57 @@ export function DashboardClient() {
   const dateFmt = new Intl.DateTimeFormat(locale, { day: "2-digit", month: "short" });
   const maxDay = stats ? Math.max(1, ...stats.weekly_activity.map((d) => d.answered)) : 1;
   const subjRows = stats?.subject_breakdown.slice(0, 4) ?? [];
+  const displayName = user?.first_name || user?.username || "Abituriyent";
+
+  const metrics = [
+    {
+      title: t("overallProgress"),
+      value: `${stats?.accuracy ?? 0}%`,
+      icon: <Icon name="target" size={18} />,
+      tile: "bg-primary-soft text-primary",
+      sub: <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-subtle">
+        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${stats?.accuracy ?? 0}%` }} />
+      </div>,
+    },
+    {
+      title: t("completedTests"),
+      value: `${stats?.total_finished ?? 0}`,
+      icon: <Icon name="check" size={18} />,
+      tile: "bg-success-soft text-success",
+      sub: <p className="mt-1 text-sm text-muted">{res("correct")} {stats?.total_questions ?? 0}</p>,
+    },
+    {
+      title: t("currentScore"),
+      value: `${stats?.current_score ?? 0}%`,
+      icon: <Icon name="chart" size={18} />,
+      tile: "bg-info-soft text-info",
+      sub: <p className="mt-1 text-sm text-muted">{stats?.total_answered ?? 0} {t("answered").toLowerCase()}</p>,
+    },
+    {
+      title: t("streak"),
+      value: `${stats?.streak ?? 0}`,
+      icon: <Flame size={18} />,
+      tile: "bg-accent-soft text-accent",
+      sub: <p className="mt-1 text-sm text-muted">{t("streakLabel")}</p>,
+    },
+  ] as const;
 
   return (
     <div className="page-enter flex flex-col gap-6">
       {/* Greeting + streak */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-2xl font-bold tracking-tight">
-          {t("greeting")}, {user?.first_name || user?.username}
-        </h2>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <span className="flex h-13 w-13 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-hover text-xl font-extrabold text-primary-foreground shadow-raised">
+            {displayName.charAt(0).toUpperCase()}
+          </span>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-subtle">{t("greeting")}</p>
+            <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">{displayName}</h2>
+          </div>
+        </div>
         <span
           className={cn(
-            "badge gap-1.5 px-3 py-1.5",
+            "badge gap-1.5 px-3 py-1.5 text-sm",
             (stats?.streak ?? 0) > 0 ? "badge-warning" : "badge-neutral"
           )}
         >
@@ -99,8 +139,8 @@ export function DashboardClient() {
       </div>
 
       {/* Quick actions */}
-      <div className="flex flex-wrap gap-3">
-        <Link href="/subjects" className="btn btn-primary">
+      <div className="flex flex-wrap items-center gap-3">
+        <Link href="/subjects" className="btn btn-primary shadow-raised">
           {t("startPractice")}
         </Link>
         <Link href="/mock-exams" className="btn btn-secondary">
@@ -136,74 +176,31 @@ export function DashboardClient() {
         <>
           {/* Metric cards */}
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-sm font-medium text-muted">{t("overallProgress")}</CardTitle>
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-soft text-primary">
-                  <Icon name="target" size={16} />
-                </span>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold tabular-nums">{stats.accuracy}%</p>
-                <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-subtle">
-                  <div
-                    className="h-full rounded-full bg-primary transition-all"
-                    style={{ width: `${stats.accuracy}%` }}
-                  />
+            {metrics.map((m) => (
+              <Card key={m.title} className="rounded-3xl p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <CardTitle className="text-sm font-semibold text-muted">{m.title}</CardTitle>
+                  <span className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl", m.tile)}>
+                    {m.icon}
+                  </span>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-sm font-medium text-muted">{t("completedTests")}</CardTitle>
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-success-soft text-success">
-                  <Icon name="check" size={16} />
-                </span>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold tabular-nums">{stats.total_finished}</p>
-                <p className="mt-1 text-sm text-muted">{res("correct")} {stats.total_questions}</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-sm font-medium text-muted">{t("currentScore")}</CardTitle>
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-info-soft text-info">
-                  <Icon name="chart" size={16} />
-                </span>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold tabular-nums">{stats.current_score}%</p>
-                <p className="mt-1 text-sm text-muted">{stats.total_answered} {t("answered").toLowerCase()}</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-sm font-medium text-muted">{t("streak")}</CardTitle>
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-warning-soft text-warning">
-                  <Flame size={16} />
-                </span>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold tabular-nums">{stats.streak}</p>
-                <p className="mt-1 text-sm text-muted">{t("streakLabel")}</p>
-              </CardContent>
-            </Card>
+                <p className="mt-3 text-4xl font-extrabold tabular-nums tracking-tight">{m.value}</p>
+                <div className="mt-2">{m.sub}</div>
+              </Card>
+            ))}
           </div>
 
           {/* Weekly activity + weak topics + subject breakdown */}
           <div className="grid gap-5 lg:grid-cols-3">
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Icon name="chart" size={18} className="text-primary" />
+            <Card className="rounded-2xl lg:col-span-2">
+              <CardHeader className="flex flex-row items-center justify-between gap-2 sm:px-6 sm:pt-6">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Icon name="chart" size={19} className="text-primary" />
                   {t("weeklyActivity")}
                 </CardTitle>
+                <span className="badge badge-neutral">{t("studyActivity")}</span>
               </CardHeader>
-              <CardContent>
+              <CardContent className="sm:px-6">
                 <div className="flex h-32 items-end justify-between gap-2 sm:gap-3">
                   {stats.weekly_activity.map((day, i) => {
                     const hPct = Math.round((day.answered / maxDay) * 100);
@@ -212,9 +209,9 @@ export function DashboardClient() {
                         <span className="text-[11px] font-medium tabular-nums text-subtle opacity-0 transition-opacity group-hover:opacity-100">
                           {day.answered}
                         </span>
-                        <div className="flex w-full max-w-8 flex-1 items-end rounded-lg bg-surface-subtle px-1.5 pb-px pt-1.5">
+                        <div className="flex w-full max-w-8 flex-1 items-end rounded-xl bg-surface-subtle px-1.5 pb-px pt-1.5">
                           <div
-                            className={cn("bar-track w-full", day.correct > 0 ? "bg-success" : "bg-primary")}
+                            className={cn("bar-track w-full rounded-full", day.correct > 0 ? "bg-success" : "bg-primary")}
                             style={{ height: `${Math.max(hPct || 8, 6)}%` }}
                             title={`${day.answered} ${t("answered").toLowerCase()}`}
                           />
@@ -239,14 +236,14 @@ export function DashboardClient() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Icon name="target" size={18} className="text-danger" />
+            <Card className="rounded-2xl">
+              <CardHeader className="sm:px-6 sm:pt-6">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Icon name="target" size={19} className="text-danger" />
                   {t("weakTitle")}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-col gap-3">
+              <CardContent className="flex flex-col gap-4 sm:px-6">
                 {stats.weak_topics.length === 0 ? (
                   <p className="py-6 text-center text-sm text-subtle">{t("emptyState")}</p>
                 ) : (
@@ -255,11 +252,11 @@ export function DashboardClient() {
                     return (
                       <div key={wt.topic_id} className="flex flex-col gap-1.5">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="truncate text-sm font-medium">{localName(wt, locale)}</span>
+                          <span className="truncate text-sm font-semibold">{localName(wt, locale)}</span>
                           <span className="shrink-0 badge badge-danger">{wt.wrong}</span>
                         </div>
                         <span className="truncate text-xs text-subtle">{localSubjectName(wt, locale)}</span>
-                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-subtle">
+                        <div className="h-2 w-full overflow-hidden rounded-full bg-surface-subtle">
                           <div className="h-full rounded-full bg-danger" style={{ width: `${pct}%` }} />
                         </div>
                       </div>
@@ -270,15 +267,19 @@ export function DashboardClient() {
             </Card>
           </div>
 
-          {/* Subject breakdown + recent sessions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Icon name="book" size={18} className="text-primary" />
+          {/* Subject breakdown */}
+          <Card className="rounded-2xl">
+            <CardHeader className="flex flex-row items-center justify-between gap-2 sm:px-6 sm:pt-6">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Icon name="book" size={19} className="text-primary" />
                 {t("subjectsTitle")}
               </CardTitle>
+              <Link href="/subjects" className="flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+                {t("startPractice")}
+                <Icon name="arrowRight" size={15} />
+              </Link>
             </CardHeader>
-            <CardContent>
+            <CardContent className="sm:px-6">
               {subjRows.length === 0 ? (
                 <p className="py-6 text-center text-sm text-subtle">{t("emptyState")}</p>
               ) : (
@@ -289,13 +290,13 @@ export function DashboardClient() {
                       <Link
                         key={s.subject_id}
                         href={`/subjects/${s.slug}`}
-                        className="card card-hover flex flex-col gap-2 p-4"
+                        className="card card-hover flex flex-col gap-2.5 rounded-2xl p-5"
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <span className="truncate text-sm font-semibold">{localSubjectName(s, locale)}</span>
+                          <span className="truncate text-sm font-bold">{localSubjectName(s, locale)}</span>
                           <span className={cn("badge", tone.bg)}>{s.accuracy}%</span>
                         </div>
-                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-subtle">
+                        <div className="h-2 w-full overflow-hidden rounded-full bg-surface-subtle">
                           <div className={cn("h-full rounded-full", tone.bar)} style={{ width: `${s.accuracy}%` }} />
                         </div>
                         <span className="text-xs text-subtle">
@@ -310,10 +311,10 @@ export function DashboardClient() {
           </Card>
 
           {/* Recent sessions */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Icon name="chart" size={18} className="text-primary" />
+          <Card className="rounded-2xl">
+            <CardHeader className="flex flex-row items-center justify-between gap-2 sm:px-6 sm:pt-6">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Icon name="chart" size={19} className="text-primary" />
                 {t("recentResults")}
               </CardTitle>
               <Link href="/subjects" className="flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
@@ -342,10 +343,10 @@ export function DashboardClient() {
                         return (
                           <tr key={s.id}>
                             <td>
-                              <div className="flex flex-col gap-0.5">
+                              <div className="flex flex-col gap-1">
                                 <Link
                                   href={`/subjects/${s.subject.slug}/practice`}
-                                  className="font-medium hover:text-primary hover:underline"
+                                  className="font-semibold hover:text-primary hover:underline"
                                 >
                                   {localSubjectOnly(s.subject, locale)}
                                 </Link>
@@ -358,9 +359,9 @@ export function DashboardClient() {
                               {dateFmt.format(new Date(s.started_at))}
                             </td>
                             <td className="tabular-nums">
-                              <span className="font-semibold text-success">{s.correct_answers}</span>
+                              <span className="font-bold text-success">{s.correct_answers}</span>
                               {" / "}
-                              <span className="font-semibold text-danger">{s.incorrect_answers}</span>
+                              <span className="font-bold text-danger">{s.incorrect_answers}</span>
                             </td>
                             <td className="text-right">
                               {done ? (

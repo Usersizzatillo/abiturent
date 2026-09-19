@@ -92,7 +92,7 @@ const [passPending, setPassPending] = useState(false);
   return (
     <ProtectedShell>
       <div className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-6">
-        <h1 className="mb-6 text-3xl font-bold tracking-tight">{t("welcomeBack")}</h1>
+        <h1 className="mb-6 text-3xl font-extrabold tracking-tight">{t("welcomeBack")}</h1>
         <div className="flex flex-col gap-6">
           <Card>
             <CardHeader>
