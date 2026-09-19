@@ -1,0 +1,92 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { Alert } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/components/providers/auth-provider";
+import { api, ApiError, extractFieldError, type CurrentUser } from "@/lib/api";
+import { Link } from "@/i18n/navigation";
+
+export default function LoginPage() {
+  const t = useTranslations("auth");
+  const common = useTranslations("common");
+  const { setUser } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next") || "/dashboard";
+
+  const [form, setForm] = useState({ username: "", password: "" });
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPending(true);
+    setError(null);
+    try {
+      const user = await api<CurrentUser>("/auth/login/", {
+        method: "POST",
+        body: JSON.stringify(form),
+      });
+      setUser(user);
+      router.replace(next);
+      router.refresh();
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? extractFieldError(err.detail) ?? t("errorInvalid")
+          : t("errorInvalid")
+      );
+    } finally {
+      setPending(false);
+    }
+  };
+
+  return (
+    <AuthShell
+      title={t("loginTitle")}
+      subtitle={t("welcomeBack")}
+      footer={
+        <>
+          {t("noAccount")}{" "}
+          <Link href="/register" className="font-semibold text-primary hover:underline">
+            {t("registerLink")}
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={onSubmit} className="flex flex-col gap-4">
+        {error ? <Alert variant="danger">{error}</Alert> : null}
+        <Input
+          label={t("username")}
+          name="username"
+          autoComplete="username"
+          required
+          value={form.username}
+          onChange={(e) => setForm({ ...form, username: e.target.value })}
+        />
+        <Input
+          label={t("password")}
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          required
+          value={form.password}
+          onChange={(e) => setForm({ ...form, password: e.target.value })}
+        />
+        <div className="flex justify-end">
+          <Link href="/forgot-password" className="text-sm font-semibold text-primary hover:underline">
+            {t("forgotPassword")}
+          </Link>
+        </div>
+        <Button type="submit" disabled={pending} className="w-full">
+          {pending ? common("loading") : t("loginBtn")}
+        </Button>
+      </form>
+    </AuthShell>
+  );
+}
