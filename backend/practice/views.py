@@ -76,18 +76,22 @@ class PracticeSessionViewSet(viewsets.ModelViewSet):
         qs = Question.objects.filter(PUBLISHED_ACTIVE, subject=data["subject"])
         if data.get("topic"):
             qs = qs.filter(topic=data["topic"])
-        pool = list(qs.order_by("?")[: data["question_count"]])
+        requested = data["question_count"]
+        pool = list(qs.order_by("?")[:requested])
         if not pool:
             return Response(
                 {"detail": "Ushbu fan bo'yicha hozircha testlar mavjud emas."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        # Pool smaller than requested: shrink session to the available count so
+        # tiny question banks still produce a working exam instead of a hard error.
+        actual_count = len(pool)
         session = PracticeSession.objects.create(
             user=request.user,
             mode=data["mode"],
             subject=data["subject"],
             topic=data.get("topic"),
-            question_count=len(pool),
+            question_count=actual_count,
         )
         session.answers.bulk_create(
             [PracticeAnswer(session=session, question=q) for q in pool]

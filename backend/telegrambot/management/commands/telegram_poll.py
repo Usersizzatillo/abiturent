@@ -7,12 +7,10 @@ from urllib import request as urllib_request
 from django.core.management.base import BaseCommand
 
 from telegrambot.services import (
-    WELCOME_TEXT,
-    daily_stats_text,
+    _handle_command,
     get_bot_token,
     get_chat_ids,
     is_configured,
-    send_message,
 )
 
 logger = logging.getLogger(__name__)
@@ -54,7 +52,7 @@ class Command(BaseCommand):
     def _get_updates(self, offset):
         token = get_bot_token()
         url = _API.format(token=token, method="getUpdates")
-        payload = {"timeout": 25, "allowed_updates": ["message"]}
+        payload = {"timeout": 25, "allowed_updates": ["message", "callback_query"]}
         if offset is not None:
             payload["offset"] = offset
         data = json.dumps(payload).encode("utf-8")
@@ -65,12 +63,19 @@ class Command(BaseCommand):
             return json.loads(resp.read().decode("utf-8"))
 
     def _handle(self, update):
+        if "callback_query" in update:
+            query = update["callback_query"]
+            chat = (query.get("message") or {}).get("chat") or {}
+            if str(chat.get("id", "")) in self.chat_ids:
+                _handle_command(str(query.get("data") or ""), str(chat.get("id", "")))
+                from telegrambot.services import answer_callback_query
+
+                answer_callback_query(query.get("id", ""), "Ok ✅")
+            return
         message = update.get("message") or {}
         chat = message.get("chat") or {}
         if str(chat.get("id", "")) not in self.chat_ids:
             return
         text = str(message.get("text") or "").strip()
-        if text == "/start":
-            send_message(WELCOME_TEXT)
-        elif text == "/stats":
-            send_message(daily_stats_text())
+        if text:
+            _handle_command(text, str(chat.get("id", "")))

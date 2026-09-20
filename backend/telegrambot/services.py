@@ -14,6 +14,7 @@ from urllib import error as urlerror
 from urllib import request as urllib_request
 
 from django.conf import settings
+from django.db.models import Q
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
@@ -36,6 +37,37 @@ def get_chat_ids():
 
 def is_configured():
     return bool(get_bot_token() and get_chat_ids())
+
+
+def _reply_markup(buttons):
+    """Inline tugmalarni (1-4 ustunli qatorlar) Telegram formatiga aylantiradi."""
+    return {
+        "inline_keyboard": [
+            [{"text": text, "callback_data": cb} for text, cb in row]
+            for row in buttons
+        ]
+    }
+
+
+def send_button_text(chat_id, text, buttons, parse_mode="HTML"):
+    """Yozish paneli/klaviaturasiz inline tugmalar bilan xabar yuboradi."""
+    return _call(
+        "sendMessage",
+        {
+            "chat_id": chat_id,
+            "text": text,
+            "parse_mode": parse_mode,
+            "disable_web_page_preview": True,
+            "reply_markup": _reply_markup(buttons),
+        },
+    )
+
+
+def answer_callback_query(callback_query_id, text=None):
+    payload = {"callback_query_id": callback_query_id}
+    if text:
+        payload["text"] = text
+    return _call("answerCallbackQuery", payload)
 
 
 def _call(method, payload):
@@ -180,6 +212,74 @@ def send_daily_stats():
     send_message(daily_stats_text())
 
 
+def leaderboard_text(limit=10):
+    """Top abituriyentlar — to'g'ri javoblar soni bo'yicha."""
+    from django.contrib.auth import get_user_model
+    from django.db.models import Count, F, Sum
+
+    from practice.models import PracticeSession
+
+    User = get_user_model()
+    qs = (
+        User.objects.annotate(
+            finished=Count(
+                "practice_sessions",
+                filter=Q(practice_sessions__status=PracticeSession.Status.FINISHED),
+            ),
+            correct=Sum(
+                "practice_sessions__correct_answers",
+                filter=Q(practice_sessions__status=PracticeSession.Status.FINISHED),
+            ),
+            total=Sum(
+                F("practice_sessions__correct_answers")
+                + F("practice_sessions__incorrect_answers"),
+                filter=Q(practice_sessions__status=PracticeSession.Status.FINISHED),
+            ),
+        )
+        .filter(finished__gt=0, is_active=True)
+        .exclude(is_staff=True, is_superuser=True)
+        .order_by("-correct", "-total")[:limit]
+    )
+    if not qs.exists():
+        return "<b>\U0001f3c5 Reyting</b>\n\nHozircha natijalar mavjud emas. Abiturientlar test topshirishni boshlashlari kerak!"
+    lines = ["<b>\U0001f3c5 Abiturend — TOP bilimdonlar</b>", ""]
+    medals = ["\U0001f947", "\U0001f948", "\U0001f949"]
+    for i, user in enumerate(qs, start=1):
+        name = user.first_name or user.username
+        badge = f'{medals[i - 1]} ' if i <= 3 else f"{i}. "
+        acc = round(user.correct * 100 / user.total) if user.total else 0
+        lines.append(
+            f"{badge}<b>{html_escape(name)}</b>\n"
+            f"   \u2705 {user.correct} to'g'ri · \U0001f4c4 {user.finished} ta test · "
+            f"\U0001f3af {acc}% aniqlik"
+        )
+    lines.append("")
+    lines.append("Test topshirib o'z o'rningni egalla! \u2728")
+    return "\n".join(lines)
+
+
+def status_text():
+    """Platforma holati — savollar, foydalanuvchilar, sog'lomlik."""
+    from django.contrib.auth import get_user_model
+
+    from questions.models import Question
+
+    User = get_user_model()
+    pending = Question.objects.filter(status=Question.Status.DRAFT).count()
+    published = Question.objects.filter(
+        status=Question.Status.PUBLISHED
+    ).count()
+    return (
+        "<b>\U0001f9fe Abiturend — holat</b>\n\n"
+        f"\U0001f4dd Savollar: <b>{Question.objects.count()}</b>\n"
+        f"   \u2705 Chop etilgan: <b>{published}</b>\n"
+        f"   \u23f3 Tekshiruvda: <b>{pending}</b>\n"
+        f"\U0001f465 Foydalanuvchilar: <b>{User.objects.count()}</b>\n"
+        f"\U0001f3c6 Test topshirganlar: <b>{User.objects.filter(practice_sessions__isnull=False).distinct().count()}</b>\n"
+        "\u26a1 Platforma: <b>\u2705 faol</b>"
+    )
+
+
 def daily_trend_text():
     """So'nggi 7 kun aktivligi — sessiyalar va to'g'ri javob ulushi."""
     from datetime import timedelta
@@ -221,23 +321,27 @@ def daily_trend_text():
         + "\n".join(rows)
     )
 
-
 WELCOME_TEXT = (
     "<b>🤖 Abiturend bot</b>\n\n"
-    "Quyidagi buyruqlar mavjud:\n"
-    "• /stats — platforma statistikasi\n"
+    "Assalomu alaykum! Men Abiturend platformasi botiman.\n"
+    "Quyidagi tugmalar yoki buyruqlar orqali boshqaring:\n\n"
+    "• /stats — kunlik statistika\n"
+    "• /top — TOP-10 abituriyentlar reytingi\n"
+    "• /status — platforma holati\n"
     "• /trend — so'nggi 7 kun faolligi\n"
     "• /help — barcha buyruqlar ro'yxati\n"
-    "• /id — chat ID ni ko'rsatish\n\n"
-    "Savollar/test natijalari haqidagi yangiliklarni avtomatik olasiz."
+    "• /id — chat ID ko'rsatish"
 )
+
 
 HELP_TEXT = (
     "<b>🤖 Abiturend bot — yordam</b>\n\n"
     "<b>Buyruqlar:</b>\n"
-    "• /start — kirish xabari\n"
+    "• /start — asosiy menyu\n"
     "• /stats — kunlik statistika (foydalanuvchilar, savollar, faollik)\n"
-    "• /trend — so'nggi 7 kun faolligi grafigi\n"
+    "• /top — TOP-10 bilimdonlar reytingi\n"
+    "• /status — platforma holati (savollar, foydalanuvchilar)\n"
+    "• /trend — so'nggi 7 kun faolligi\n"
     "• /id — joriy chat ID\n"
     "• /help — bu xabar\n\n"
     "<b>Avtomatik bildirishnomalar:</b>\n"

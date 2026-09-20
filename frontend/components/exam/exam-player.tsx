@@ -3,8 +3,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { startPractice, fetchSessionQuestions, submitAnswer, finishSession, type SessionQuestion, type SessionReport, type SessionOption } from "@/lib/sessions";
+import { ApiError, extractFieldError } from "@/lib/api";
 import { localizedName, type Subject } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
+
+function errorMessage(e: unknown, fallback: string): string {
+  if (e instanceof ApiError) {
+    const detail = extractFieldError(e.detail);
+    return detail ?? fallback;
+  }
+  return fallback;
+}
 
 function CheckIcon({ size = 18 }: { size?: number }) {
   return (
@@ -244,13 +253,13 @@ export function ExamPlayer({
     if (finished || !sessionId.current || timedOut.current) return;
     timedOut.current = true;
     setSubmitting(true);
-    try {
-      const rep = await finishSession(sessionId.current);
-      setReport(rep);
-      setFinished(true);
-    } catch {
-      setError(common("error"));
-    } finally {
+try {
+        const rep = await finishSession(sessionId.current);
+        setReport(rep);
+        setFinished(true);
+      } catch (e) {
+        setError(errorMessage(e, common("error")));
+      } finally {
       setSubmitting(false);
     }
   }, [finished, common]);
@@ -270,9 +279,9 @@ export function ExamPlayer({
           setQuestions(qs);
           setPending(false);
         }
-      } catch {
+      } catch (e) {
         if (!ignore) {
-          setError(common("error"));
+          setError(errorMessage(e, common("error")));
           setPending(false);
         }
       }
@@ -306,8 +315,8 @@ export function ExamPlayer({
         setIndex((i) => i + 1);
         setSubmitting(false);
       }
-    } catch {
-      setError(common("error"));
+    } catch (e) {
+      setError(errorMessage(e, common("error")));
       setSubmitting(false);
     }
   };

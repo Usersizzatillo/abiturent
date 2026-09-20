@@ -6,7 +6,6 @@ Xavfsizlik: `X-Telegram-Bot-Api-Secret-Token` header'i bilan himoyalangan
 `python manage.py tg_set_webhook --drop` (yoki deploy paytida avtomatik).
 """
 
-import hashlib
 import hmac
 import json
 import logging
@@ -29,23 +28,31 @@ def _secret_ok(request) -> bool:
     return hmac.compare_digest(header.encode(), secret.encode())
 
 
-def _handle_update(update):
-    message = update.get("message") or {}
-    chat = message.get("chat") or {}
-    chat_id = str(chat.get("id", ""))
-    if chat_id not in services.get_chat_ids():
-        return
-    text = str(message.get("text") or "").strip()
-    if not text:
-        return
+def _authorized(chat_id) -> bool:
+    return str(chat_id) in services.get_chat_ids()
 
+
+def _handle_command(text, chat_id):
+    text = (text or "").strip()
     if text == "/start":
-        services.send_message(services.WELCOME_TEXT, chat_id=chat_id)
+        services.send_button_text(
+            chat_id,
+            services.WELCOME_TEXT,
+            [
+                [("📊 Statistika", "stats"), ("🏆 Reyting", "top")],
+                [("🩺 Holat", "status"), ("📈 7 kun", "trend")],
+                [("❓ Yordam", "help")],
+            ],
+        )
     elif text == "/help":
         services.send_message(services.HELP_TEXT, chat_id=chat_id)
-    elif text == "/stats":
+    elif text in ("/stats", "stats", "📊 Statistika"):
         services.send_message(services.daily_stats_text(), chat_id=chat_id)
-    elif text == "/trend":
+    elif text in ("/top", "top", "🏆 Reyting"):
+        services.send_message(services.leaderboard_text(), chat_id=chat_id)
+    elif text in ("/status", "status", "🩺 Holat"):
+        services.send_message(services.status_text(), chat_id=chat_id)
+    elif text in ("/trend", "trend", "📈 7 kun"):
         services.send_message(services.daily_trend_text(), chat_id=chat_id)
     elif text == "/id":
         services.send_message(
@@ -61,6 +68,29 @@ def _handle_update(update):
         )
 
 
+def _handle_callback(query):
+    chat = (query.get("message") or {}).get("chat") or {}
+    chat_id = str(chat.get("id", ""))
+    if not _authorized(chat_id):
+        services.answer_callback_query(query.get("id", ""), "Ruxsat yo'q")
+        return
+    data = str(query.get("data") or "")
+    services.answer_callback_query(query.get("id", ""), "Ok ✅")
+    _handle_command(data, chat_id)
+
+
+def _handle_update(update):
+    message = update.get("message") or {}
+    chat = message.get("chat") or {}
+    chat_id = str(chat.get("id", ""))
+    if not _authorized(chat_id):
+        return
+    text = str(message.get("text") or "").strip()
+    if not text:
+        return
+    _handle_command(text, chat_id)
+
+
 @csrf_exempt
 @require_POST
 def telegram_webhook(request):
@@ -72,7 +102,10 @@ def telegram_webhook(request):
     except (ValueError, UnicodeDecodeError):
         return JsonResponse({"ok": False, "error": "bad payload"}, status=400)
     try:
-        _handle_update(update)
+        if "callback_query" in update:
+            _handle_callback(update["callback_query"])
+        else:
+            _handle_update(update)
     except Exception:
         logger.exception("Telegram webhook ishlov berish xatosi")
     return JsonResponse({"ok": True})

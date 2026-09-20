@@ -47,6 +47,21 @@ class TelegramServicesTests(TestCase):
         self.assertIn(timezone.localdate().strftime("%d.%m.%Y"), text)
         self.assertIn("Abiturend", text)
 
+    def test_leaderboard_text_empty_state(self):
+        text = services.leaderboard_text()
+        self.assertIn("Reyting", text)
+
+    def test_status_text_contains_counts(self):
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+        User.objects.create_user(
+            username="s2", password="Passw0rd!", role=User.Role.STUDENT
+        )
+        text = services.status_text()
+        self.assertIn("Savollar", text)
+        self.assertIn("Foydalanuvchilar", text)
+
     def test_send_message_noop_when_unconfigured(self):
         results = services.send_message("hello")
         self.assertEqual(results, [])
