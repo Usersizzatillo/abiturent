@@ -231,3 +231,57 @@ class PracticeApiTests(APITestCase):
             fresh.get("/api/stats/summary/").status_code,
             status.HTTP_403_FORBIDDEN,
         )
+
+    def _finished_session(self, user, correct, incorrect=0):
+        return PracticeSession.objects.create(
+            user=user,
+            subject=self.subject,
+            status=PracticeSession.Status.FINISHED,
+            question_count=correct + incorrect,
+            correct_answers=correct,
+            incorrect_answers=incorrect,
+        )
+
+    def test_leaderboard_public_and_sorted(self):
+        top = User.objects.create_user(
+            username="top_user",
+            first_name="Ali",
+            password="Passw0rd!",
+            role=User.Role.STUDENT,
+        )
+        mid = User.objects.create_user(
+            username="mid_user",
+            password="Passw0rd!",
+            role=User.Role.STUDENT,
+        )
+        self._finished_session(top, correct=8, incorrect=2)
+        self._finished_session(top, correct=2)
+        self._finished_session(mid, correct=5, incorrect=5)
+        staff = User.objects.create_superuser(
+            username="staff_user", password="Passw0rd!", email="staff@test.com"
+        )
+        self._finished_session(staff, correct=100)
+
+        res = self.client.__class__().get("/api/leaderboard/")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(res.data), 2)
+        self.assertEqual(res.data[0]["rank"], 1)
+        self.assertEqual(res.data[0]["display_name"], "Ali")
+        self.assertEqual(res.data[0]["correct_answers"], 10)
+        self.assertEqual(res.data[0]["finished_sessions"], 2)
+        self.assertEqual(res.data[0]["total_answered"], 12)
+        self.assertEqual(res.data[0]["accuracy_percent"], 83)
+        self.assertEqual(res.data[1]["rank"], 2)
+        self.assertEqual(res.data[1]["display_name"], "mid_user")
+        self.assertGreater(
+            res.data[0]["correct_answers"], res.data[1]["correct_answers"]
+        )
+        self.assertFalse(any(row["display_name"] == "staff_user" for row in res.data))
+
+    def test_leaderboard_excludes_users_without_finished_sessions(self):
+        User.objects.create_user(
+            username="noob", password="Passw0rd!", role=User.Role.STUDENT
+        )
+        res = self.client.__class__().get("/api/leaderboard/")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data, [])

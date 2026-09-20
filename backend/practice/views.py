@@ -1,16 +1,19 @@
-from django.db.models import Max, Q
+from django.contrib.auth import get_user_model
+from django.db.models import Count, F, Max, Q, Sum
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from questions.models import Question, QuestionOption
 from questions.serializers import QuestionFullSerializer
 
 from .models import PracticeAnswer, PracticeSession
 from .serializers import (
+    LeaderboardEntrySerializer,
     PracticeAnswerInSerializer,
     PracticeAnswerResultSerializer,
     PracticeQuestionSerializer,
@@ -18,7 +21,39 @@ from .serializers import (
     SessionListSerializer,
 )
 
+User = get_user_model()
+
 PUBLISHED_ACTIVE = Q(is_active=True) & Q(status=Question.Status.PUBLISHED)
+
+
+class LeaderboardView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        queryset = (
+            User.objects.annotate(
+                finished_sessions=Count(
+                    "practice_sessions",
+                    filter=Q(practice_sessions__status=PracticeSession.Status.FINISHED),
+                ),
+                correct_answers=Sum(
+                    "practice_sessions__correct_answers",
+                    filter=Q(practice_sessions__status=PracticeSession.Status.FINISHED),
+                ),
+                total_answered=Sum(
+                    F("practice_sessions__correct_answers")
+                    + F("practice_sessions__incorrect_answers"),
+                    filter=Q(practice_sessions__status=PracticeSession.Status.FINISHED),
+                ),
+            )
+            .filter(finished_sessions__gt=0, is_active=True)
+            .exclude(is_staff=True, is_superuser=True)
+            .order_by("-correct_answers", "-total_answered")[:10]
+        )
+        for rank, user in enumerate(queryset, start=1):
+            user.rank = rank
+        data = LeaderboardEntrySerializer(queryset, many=True).data
+        return Response(data)
 
 
 class PracticeSessionViewSet(viewsets.ModelViewSet):

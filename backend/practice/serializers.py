@@ -95,6 +95,23 @@ class PracticeAnswerInSerializer(serializers.Serializer):
         return attrs
 
 
+class LeaderboardEntrySerializer(serializers.Serializer):
+    rank = serializers.IntegerField()
+    display_name = serializers.SerializerMethodField()
+    finished_sessions = serializers.IntegerField()
+    correct_answers = serializers.IntegerField()
+    total_answered = serializers.IntegerField()
+    accuracy_percent = serializers.SerializerMethodField()
+
+    def get_display_name(self, obj) -> str:
+        return obj.first_name or obj.username
+
+    def get_accuracy_percent(self, obj) -> int:
+        if not obj.total_answered:
+            return 0
+        return round((obj.correct_answers / obj.total_answered) * 100)
+
+
 class PracticeAnswerResultSerializer(serializers.Serializer):
     is_correct = serializers.BooleanField()
     correct_option_id = serializers.IntegerField()

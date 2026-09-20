@@ -3,6 +3,9 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Link } from "@/i18n/navigation";
 import { Reveal } from "@/components/landing/reveal";
+import { Testimonials } from "@/components/landing/testimonials";
+import { SubjectsGrid } from "@/components/landing/subjects-grid";
+import { Leaderboard } from "@/components/landing/leaderboard";
 import {
   AnalyticsMockup,
   ExamAppMockup,
@@ -362,6 +365,15 @@ export default async function LandingPage({
             ))}
           </div>
         </section>
+
+        {/* ============ TESTIMONIALS ============ */}
+        <Testimonials />
+
+        {/* ============ DIRECTIONS (subjects) ============ */}
+        <SubjectsGrid />
+
+        {/* ============ LEADERBOARD ============ */}
+        <Leaderboard />
 
         {/* ============ FINAL CTA ============ */}
         <section className="mx-auto max-w-7xl px-4 pb-24 sm:px-6">
