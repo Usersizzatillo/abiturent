@@ -30,9 +30,39 @@ export async function generateMetadata({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "meta" });
+  const domain = "https://abituriyent.orgtrace.uz";
   return {
-    title: t("title"),
+    title: {
+      default: t("title"),
+      template: `%s · Abiturend`,
+    },
     description: t("description"),
+    metadataBase: new URL(domain),
+    alternates: {
+      canonical: `/${locale}`,
+      languages: {
+        en: "/en",
+        ru: "/ru",
+        uz: "/uz",
+      },
+    },
+    openGraph: {
+      type: "website",
+      locale,
+      url: `/${locale}`,
+      siteName: "Abiturend",
+      title: t("title"),
+      description: t("description"),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t("title"),
+      description: t("description"),
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
   };
 }
 

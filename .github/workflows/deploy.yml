@@ -1,0 +1,37 @@
+name: Deploy Abiturend
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script: |
+            set -e
+            cd /opt/abiturend
+            git fetch origin main
+            git reset --hard origin/main
+            cp -n .env.example .env || true
+            docker compose up -d --build --remove-orphans
+            docker compose exec -T backend python manage.py migrate --noinput || true
+            docker compose exec -T backend python manage.py collectstatic --noinput || true
+            docker compose exec -T backend python manage.py tg_set_webhook --url "https://${{ secrets.DEPLOY_HOST }}/webhooks/telegram/" || true
+            echo "Deploy OK: $(date -u)"

@@ -56,22 +56,39 @@ Healthcheck: `GET http://127.0.0.1:8000/api/health/`
 | `TELEGRAM_BOT_TOKEN`       | `@BotFather` -> `/newbot` orqali olinadi |
 | `TELEGRAM_CHAT_ID`         | Admin chat id (`@userinfobot`)           |
 | `TELEGRAM_ALLOWED_CHAT_IDS`| Vergul bilan qo'shimcha chat id'lar      |
+| `TELEGRAM_WEBHOOK_SECRET`  | Webhook xavfsizlik kaliti (ixtiyoriy token) |
+| `TELEGRAM_WEBHOOK_HOST`    | Domen (masalan `abituriyent.orgtrace.uz`) |
 
 - Yangi foydalanuvchi ro'yxatdan o'tganda **avtomatik xabar**
 - O'qituvchi yangi savol qo'shganda **avtomatik xabar** (tekshiruvda)
 - `/stats` — kunlik statistika (foydalanuvchilar, savollar, faollik)
+- `/trend` — so'nggi 7 kun faolligi
+- `/help` — buyruqlar ro'yxati, `/id` — chat ID
 
-Qo'lda ishga tushirish:
+Arxitektura: **webhook** asosida — Telegram `/webhooks/telegram/` ga to'g'ridan-to'g'ri
+POST yuboradi (polling servisi shart emas). Webhook deploy paytida avtomatik ro'yxatdan
+o'tkaziladi:
 
 ```bash
 cd backend
+python manage.py tg_set_webhook --drop          # webhook bekor qilish
+python manage.py tg_set_webhook                 # domenni ALLOWED_HOSTS/`TELEGRAM_WEBHOOK_HOST` dan o'qiydi
+python manage.py tg_set_webhook --url https://domen/webhooks/telegram/
+```
+
+Qo'lda xabar yuborish:
+
+```bash
 python manage.py tg_send "Assalomu alaykum!"
 python manage.py tg_stats                 # kunlik statistika
-python manage.py telegram_poll            # botni uzluksiz ishga tushiradi
+python manage.py tg_monitor               # uptime tekshiruvi (nosozlikda xabar)
 ```
 
 > Har kuni avtomatik statistika uchun: `python manage.py tg_stats` ni cron
-> (masalan `0 9 * * *`) ga qo'ying.
+> (masalan `0 9 * * *`) ga qo'ying. Monitoring: `*/5 * * * *` da `tg_monitor`.
+>
+> Lokal sinov uchun polling rejimi hali ham mavjud:
+> `python manage.py telegram_poll`
 
 ### 2. Frontend
 
@@ -95,8 +112,8 @@ docker compose up -d --build
 Serverda:
 
 ```bash
-git clone <repo-url> abuturend
-cd abuturend
+git clone <repo-url> abiturend
+cd abiturend
 cp .env.example .env
 # .env ichida DJANGO_SECRET_KEY, POSTGRES_PASSWORD va domenlarni o'rnating
 docker compose up -d --build
@@ -104,6 +121,35 @@ docker compose up -d --build
 
 Nginx `nginx/nginx.conf` reverse-proxy sifatida `frontend:3000` ga yo'naltiradi;
 HTTPS Let's Encrypt orqali yoki yuqori qatlamda qo'shiladi.
+
+### Avtomatik deploy (CI/CD)
+
+`.github/workflows/deploy.yml` — `main` branch'ga push bo'lganida avtomatik
+deploy'laydi. GitHub repo settings → Secrets and variables → Actions:
+
+| Secret            | Tavsif                                  |
+| ----------------- | --------------------------------------- |
+| `DEPLOY_HOST`     | Server IP (masalan `189.74.97.158`)     |
+| `DEPLOY_USER`     | SSH foydalanuvchi (masalan `root`)      |
+| `DEPLOY_PORT`     | SSH port (ixtiyoriy, default `22`)      |
+| `DEPLOY_SSH_KEY`  | Serverdagi `~/.ssh/authorized_keys` ga qo'yilgan **private** SSH key |
+
+Oqim avtomatik: pull → build → migrate → collectstatic → webhook o'rnatish.
+
+### Monitoring
+
+`python manage.py tg_monitor` sayt va API uptime'ni tekshiradi; nosozlik
+topilsa Telegramga xabar yuboradi. Serverda crontab orqali ishga tushiriladi:
+
+```text
+*/5 * * * * root docker exec $(docker ps -qf name=abiturend-backend) python manage.py tg_monitor
+```
+
+Kunlik statistika (har kuni 09:00):
+
+```text
+0 9 * * * root docker exec $(docker ps -qf name=abiturend-backend) python manage.py tg_stats
+```
 
 ## Status
 

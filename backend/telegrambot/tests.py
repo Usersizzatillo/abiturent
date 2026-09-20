@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from catalog.models import Subject
@@ -54,3 +54,46 @@ class TelegramServicesTests(TestCase):
     def test_is_configured_false_by_default(self):
         with self.settings(TELEGRAM_BOT_TOKEN="", TELEGRAM_CHAT_ID=""):
             self.assertFalse(services.is_configured())
+
+
+class TelegramWebhookTests(TestCase):
+    def _post(self, text, chat_id="5458715260", secret="test-secret"):
+        from django.test import Client
+
+        c = Client()
+        return c.post(
+            "/webhooks/telegram/",
+            data=f'{{"message":{{"chat":{{"id":"{chat_id}"}},"text":"{text}"}}}}',
+            content_type="application/json",
+            HTTP_X_TELEGRAM_BOT_API_SECRET_TOKEN=secret,
+            SERVER_NAME="localhost",
+        )
+
+    @override_settings(
+        TELEGRAM_WEBHOOK_SECRET="test-secret",
+        TELEGRAM_BOT_TOKEN="",
+        TELEGRAM_CHAT_ID="",
+    )
+    def test_unauthorized_secret_rejected(self):
+        resp = self._post("/id", secret="wrong")
+        self.assertEqual(resp.status_code, 401)
+
+    @override_settings(
+        TELEGRAM_WEBHOOK_SECRET="test-secret",
+        TELEGRAM_BOT_TOKEN="",
+        TELEGRAM_CHAT_ID="5458715260",
+    )
+    def test_unknown_command_greeted(self):
+        resp = self._post("/bogus")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json(), {"ok": True})
+
+    @override_settings(
+        TELEGRAM_WEBHOOK_SECRET="test-secret",
+        TELEGRAM_BOT_TOKEN="",
+        TELEGRAM_CHAT_ID="5458715260",
+    )
+    def test_non_admin_chat_ignored(self):
+        resp = self._post("/id", chat_id="999")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json(), {"ok": True})

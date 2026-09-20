@@ -66,8 +66,28 @@ export default async function LandingPage({
   setRequestLocale(locale);
   const t = await getTranslations("landing");
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "Abiturend",
+    url: "https://abituriyent.orgtrace.uz",
+    applicationCategory: "EducationalApplication",
+    operatingSystem: "Any",
+    availableLanguage: ["uz", "ru", "en"],
+    description: t("heroSubtitle"),
+    about: {
+      "@type": "Organization",
+      name: "Abiturend",
+      description: "DTM / BMB imtihonlariga tayyorgarlik platformasi",
+    },
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Header />
       <main className="page-enter flex-1">
         {/* ============ HERO ============ */}

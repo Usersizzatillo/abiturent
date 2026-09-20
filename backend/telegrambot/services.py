@@ -65,17 +65,18 @@ def _call(method, payload):
     return None
 
 
-def send_message(text, parse_mode="HTML", silent=False):
-    """Barcha sozlangan chatlarga xabar yuboradi. Javoblar ro'yxatini qaytaradi."""
+def send_message(text, parse_mode="HTML", silent=False, chat_id=None):
+    """Sozlangan chatlarga xabar yuboradi. Javoblar ro'yxatini qaytaradi."""
     if not is_configured():
         return []
+    targets = [chat_id] if chat_id is not None else get_chat_ids()
     results = []
-    for chat_id in get_chat_ids():
+    for cid in targets:
         results.append(
             _call(
                 "sendMessage",
                 {
-                    "chat_id": chat_id,
+                    "chat_id": cid,
                     "text": text,
                     "parse_mode": parse_mode,
                     "disable_web_page_preview": True,
@@ -84,6 +85,10 @@ def send_message(text, parse_mode="HTML", silent=False):
             )
         )
     return results
+
+
+def send_typing(chat_id):
+    return _call("sendChatAction", {"chat_id": chat_id, "action": "typing"})
 
 
 def new_user_text(user):
@@ -175,9 +180,70 @@ def send_daily_stats():
     send_message(daily_stats_text())
 
 
+def daily_trend_text():
+    """So'nggi 7 kun aktivligi — sessiyalar va to'g'ri javob ulushi."""
+    from datetime import timedelta
+
+    from practice.models import PracticeAnswer, PracticeSession
+
+    today = timezone.localdate()
+    start = timezone.make_aware(
+        datetime.combine(today - timedelta(days=6), time.min),
+        timezone.get_current_timezone(),
+    )
+    rows = []
+    for i in range(7):
+        day = today - timedelta(days=6 - i)
+        ds = timezone.make_aware(
+            datetime.combine(day, time.min), timezone.get_current_timezone()
+        )
+        de = ds + timezone.timedelta(days=1)
+        sessions = PracticeSession.objects.filter(
+            started_at__gte=ds, started_at__lt=de
+        ).count()
+        answers = PracticeAnswer.objects.filter(
+            answered_at__gte=ds, answered_at__lt=de
+        ).count()
+        correct = PracticeAnswer.objects.filter(
+            answered_at__gte=ds,
+            answered_at__lt=de,
+            is_correct=True,
+        ).count()
+        acc = round((correct / answers) * 100) if answers else None
+        row = "🟩" if sessions else "⬜"
+        rows.append(
+            f"{day:%a} {row} · {sessions} sessiya · "
+            f"{('%.0f%%' % acc) if acc is not None else '—'} to'g'ri"
+        )
+    return (
+        "<b>📈 So'nggi 7 kun faolligi</b>\n"
+        f"{today:%d.%m.%Y} holatiga\n\n"
+        + "\n".join(rows)
+    )
+
+
 WELCOME_TEXT = (
-    "<b>\U0001f916 Abiturend bot</b>\n\n"
+    "<b>🤖 Abiturend bot</b>\n\n"
     "Quyidagi buyruqlar mavjud:\n"
-    "/stats — platforma statistika xabarnomasi\n"
-    "/start — bu xabarni ko'rsatish"
+    "• /stats — platforma statistikasi\n"
+    "• /trend — so'nggi 7 kun faolligi\n"
+    "• /help — barcha buyruqlar ro'yxati\n"
+    "• /id — chat ID ni ko'rsatish\n\n"
+    "Savollar/test natijalari haqidagi yangiliklarni avtomatik olasiz."
+)
+
+HELP_TEXT = (
+    "<b>🤖 Abiturend bot — yordam</b>\n\n"
+    "<b>Buyruqlar:</b>\n"
+    "• /start — kirish xabari\n"
+    "• /stats — kunlik statistika (foydalanuvchilar, savollar, faollik)\n"
+    "• /trend — so'nggi 7 kun faolligi grafigi\n"
+    "• /id — joriy chat ID\n"
+    "• /help — bu xabar\n\n"
+    "<b>Avtomatik bildirishnomalar:</b>\n"
+    "• Yangi foydalanuvchi ro'yxatdan o'tsa\n"
+    "• O'qituvchi yangi savol qo'shsa\n"
+    "• Kunlik statistika (cron orqali)\n\n"
+    "Botga savol yuborilsa — admin sifatida qabul qilinadi va "
+    "tegishli bo'limga yo'naltiriladi."
 )

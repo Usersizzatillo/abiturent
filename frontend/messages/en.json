@@ -14,7 +14,8 @@
     "profile": "Profile",
     "logout": "Log out",
     "teacherPanel": "Teacher panel",
-    "language": "Language"
+    "language": "Language",
+    "telegramBot": "Telegram bot"
   },
   "common": {
     "loading": "Loading...",

@@ -14,7 +14,8 @@
     "profile": "Profil",
     "logout": "Chiqish",
     "teacherPanel": "O'qituvchi paneli",
-    "language": "Til"
+    "language": "Til",
+    "telegramBot": "Telegram bot"
   },
   "common": {
     "loading": "Yuklanmoqda...",
