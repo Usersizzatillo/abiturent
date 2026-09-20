@@ -117,7 +117,9 @@
     "directionsSubtitle": "O'zingizga kerakli fanni tanlang va mavzular bo'yicha mashqni boshlang.",
     "directionsQuestions": "{count} ta savol",
     "directionsTopics": "{count} ta mavzu",
-    "directionsStart": "Boshlash"
+    "directionsStart": "Boshlash",
+    "leaderboardEmptyTitle": "Birinchi yetakchi siz bo’ling!",
+    "leaderboardEmptyDesc": "Sinov imtihonini topshiring va reytingda birinchi ishtirokchi bo’ling."
   },
   "auth": {
     "welcomeBack": "Xush kelibsiz",

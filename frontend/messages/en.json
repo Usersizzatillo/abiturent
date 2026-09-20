@@ -117,7 +117,9 @@
     "directionsSubtitle": "Choose the subject you need and start practicing topic by topic.",
     "directionsQuestions": "{count} questions",
     "directionsTopics": "{count} topics",
-    "directionsStart": "Start"
+    "directionsStart": "Start",
+    "leaderboardEmptyTitle": "Be the first leader!",
+    "leaderboardEmptyDesc": "Take a mock exam and become the first name on the leaderboard."
   },
   "auth": {
     "welcomeBack": "Welcome back",

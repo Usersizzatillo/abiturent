@@ -117,7 +117,9 @@
     "directionsSubtitle": "Выберите нужный предмет и начните тренировку по темам.",
     "directionsQuestions": "{count} вопросов",
     "directionsTopics": "{count} тем",
-    "directionsStart": "Начать"
+    "directionsStart": "Начать",
+    "leaderboardEmptyTitle": "Станьте первым лидером!",
+    "leaderboardEmptyDesc": "Сдайте пробный экзамен и станьте первым участником рейтинга."
   },
   "auth": {
     "welcomeBack": "РЎ РІРѕР·РІСЂР°С‰РµРЅРёРµРј",

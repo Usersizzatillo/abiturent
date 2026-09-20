@@ -53,7 +53,40 @@ export function Leaderboard() {
       </div>
     );
   }
-  if (entries.length === 0) return null;
+  if (entries.length === 0) {
+    return (
+      <section className="mx-auto max-w-7xl px-4 pb-24 sm:px-6">
+        <Reveal>
+          <div className="mb-10 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
+            <div>
+              <span className="badge badge-warning mb-4">
+                {t("leaderboardTag")}
+              </span>
+              <h2 className="text-display-sm">{t("leaderboardTitle")}</h2>
+              <p className="mt-3 text-lg text-muted">{t("leaderboardSubtitle")}</p>
+            </div>
+          </div>
+        </Reveal>
+        <Reveal delay={100}>
+          <div className="mesh noise-overlay relative overflow-hidden rounded-[1.75rem] border border-border p-12 text-center sm:p-16">
+            <div aria-hidden className="orb orb-blue left-[-4rem] top-[-4rem] h-72 w-72 opacity-70" />
+            <div aria-hidden className="orb orb-amber bottom-[-5rem] right-[-3rem] h-72 w-72 opacity-60" />
+            <div className="relative z-10 flex flex-col items-center gap-5">
+              <span className="text-6xl">🏆</span>
+              <h3 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                {t("leaderboardEmptyTitle")}
+              </h3>
+              <p className="max-w-md text-muted">{t("leaderboardEmptyDesc")}</p>
+              <Link href="/register" className="btn btn-cta mt-2 px-8 py-3">
+                {t("leaderboardJoin")}
+                <span aria-hidden>→</span>
+              </Link>
+            </div>
+          </div>
+        </Reveal>
+      </section>
+    );
+  }
 
   return (
     <section className="mx-auto max-w-7xl px-4 pb-24 sm:px-6">
