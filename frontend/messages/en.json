@@ -89,7 +89,10 @@
     "step3Title": "Analyze",
     "step3Desc": "Review your results and strengthen weak areas.",
     "showcasePracticeTag": "Practice",
-    "showcaseAnalyticsTag": "Analytics"
+    "showcaseAnalyticsTag": "Analytics",
+    "badgeShort": "Features",
+    "featExamChip": "Real exam mode",
+    "ctaTitle": "A confident step to higher education"
   },
   "auth": {
     "welcomeBack": "Welcome back",

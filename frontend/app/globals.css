@@ -602,4 +602,190 @@ body {
     background: var(--surface-subtle);
     border-radius: 9999px;
   }
+
+  /* =============================================================
+     Landing 2.0 — premium glass / bento / mesh design system
+     ============================================================= */
+
+  /* Film-grain noise overlay */
+  .noise-overlay::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.04;
+    z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Signature mesh gradient — multi-point color field */
+  .mesh {
+    background:
+      radial-gradient(55rem 28rem at 12% -8%, color-mix(in srgb, var(--primary) 26%, transparent), transparent 60%),
+      radial-gradient(45rem 26rem at 100% -4%, color-mix(in srgb, #7c3aed 22%, transparent), transparent 55%),
+      radial-gradient(40rem 26rem at 82% 70%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 55%),
+      radial-gradient(44rem 28rem at 0% 88%, color-mix(in srgb, var(--info) 16%, transparent), transparent 60%);
+  }
+
+  /* Animated floating orbs */
+  .orb {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(64px);
+    pointer-events: none;
+    will-change: transform;
+  }
+  .orb-blue   { background: color-mix(in srgb, var(--primary) 45%, transparent); }
+  .orb-violet { background: color-mix(in srgb, #8b5cf6 40%, transparent); }
+  .orb-amber  { background: color-mix(in srgb, var(--accent) 38%, transparent); }
+  .anim-orb      { animation: orbDrift 18s ease-in-out infinite; }
+  .anim-orb-late { animation: orbDrift 26s ease-in-out infinite reverse; }
+  @keyframes orbDrift {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    33%      { transform: translate3d(46px, -32px, 0) scale(1.08); }
+    66%      { transform: translate3d(-34px, 22px, 0) scale(0.94); }
+  }
+
+  /* Glass card — frosted surface, subtle luminous border */
+  .glass {
+    background: color-mix(in srgb, var(--surface) 72%, transparent);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid color-mix(in srgb, var(--border-strong) 55%, transparent);
+    box-shadow: var(--shadow-raised);
+  }
+  .glass-strong {
+    background: color-mix(in srgb, var(--surface) 86%, transparent);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid color-mix(in srgb, var(--border-strong) 70%, transparent);
+    box-shadow: var(--shadow-popover);
+  }
+
+  /* Oversized display typography */
+  .text-display {
+    font-size: clamp(2.7rem, 6.4vw, 4.75rem);
+    line-height: 1.02;
+    letter-spacing: -0.045em;
+    font-weight: 800;
+  }
+  .text-display-sm {
+    font-size: clamp(2rem, 4.6vw, 3.4rem);
+    line-height: 1.06;
+    letter-spacing: -0.035em;
+    font-weight: 800;
+  }
+
+  /* Bento grid — asymmetric cell spans */
+  .bento {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 640px) {
+    .bento { grid-template-columns: repeat(6, 1fr); }
+  }
+  .bento-xs { grid-column: span 6; }
+  .bento-sm { grid-column: span 3; }
+  .bento-md { grid-column: span 4; }
+  .bento-lg { grid-column: span 6; }
+  @media (min-width: 1024px) {
+    .bento-xs { grid-column: span 2; }
+    .bento-sm { grid-column: span 3; }
+    .bento-md { grid-column: span 4; }
+  }
+
+  /* Bento tile */
+  .bento-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-2xl);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
+    transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 260ms ease, box-shadow 260ms ease;
+  }
+  .bento-card:hover {
+    transform: translateY(-5px);
+    border-color: color-mix(in srgb, var(--primary) 42%, var(--border));
+    box-shadow: var(--shadow-popover);
+  }
+
+  /* Pulsing live dot (online/active indicator) */
+  .live-dot {
+    position: relative;
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    background: var(--success);
+  }
+  .live-dot::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: 9999px;
+    background: var(--success);
+    opacity: 0.5;
+    animation: livePulse 2s ease-out infinite;
+  }
+  @keyframes livePulse {
+    0%   { transform: scale(0.6); opacity: 0.6; }
+    100% { transform: scale(1.6); opacity: 0; }
+  }
+
+  /* Marquee strip for trusted-by / ticker */
+  .marquee {
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  }
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    gap: 3rem;
+    animation: marqueeScroll 30s linear infinite;
+  }
+  @keyframes marqueeScroll {
+    to { transform: translateX(-50%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track { animation: none; }
+  }
+
+  /* Glow behind primary CTA */
+  .cta-glow {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 30%, transparent),
+      0 12px 40px -8px color-mix(in srgb, var(--primary) 55%, transparent);
+  }
+  .btn-cta {
+    background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 60%, #7c3aed));
+    color: #fff;
+    transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 200ms ease,
+      filter 200ms ease;
+  }
+  .btn-cta:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+    box-shadow: 0 14px 44px -8px color-mix(in srgb, var(--primary) 62%, transparent);
+  }
+
+  /* Big ghost number (editorial watermark) */
+  .ghost-num {
+    font-size: 5.5rem;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    color: color-mix(in srgb, var(--foreground) 8%, transparent);
+    -webkit-text-stroke: 1px color-mix(in srgb, var(--foreground) 16%, transparent);
+  }
+
+  /* Product screenshot ring frame */
+  .screen {
+    border-radius: 1.5rem;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    box-shadow: var(--shadow-popover);
+    overflow: hidden;
+  }
 }

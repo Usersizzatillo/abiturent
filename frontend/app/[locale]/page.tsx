@@ -16,13 +16,6 @@ const STATS = [
   { key: "statsUniversities", value: "40+", icon: "building" },
 ] as const;
 
-const FEATURES = [
-  { key: "featPractice", icon: "pencil", feature: "practice" },
-  { key: "featExam", icon: "timer", feature: "exam" },
-  { key: "featAnalytics", icon: "chart", feature: "analytics" },
-  { key: "featUni", icon: "building", feature: "university" },
-] as const;
-
 function Icon({ name, size = 22 }: { name: string; size?: number }) {
   const paths: Record<string, React.ReactNode> = {
     users: <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />,
@@ -39,6 +32,8 @@ function Icon({ name, size = 22 }: { name: string; size?: number }) {
     arrowRight: <path d="M5 12h14m-6-6 6 6-6 6" />,
     command: <><rect x="3" y="3" width="18" height="18" rx="6" /><circle cx="9" cy="9" r="1.5" /><circle cx="15" cy="15" r="1.5" /><path d="M9 15h6M15 9H9" /></>,
     layers: <path d="m12 2 9 5-9 5-9-5 9-5zM3 12l9 5 9-5M3 17l9 5 9-5" />,
+    bolt: <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z" />,
+    target: <><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></>,
   };
   return (
     <svg
@@ -89,138 +84,223 @@ export default async function LandingPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Header />
-      <main className="page-enter flex-1">
+
+      <main className="page-enter flex-1 overflow-x-clip">
         {/* ============ HERO ============ */}
-        <section className="hero-bg relative overflow-hidden">
-          <div aria-hidden className="hero-grid pointer-events-none absolute inset-0" />
-          <div aria-hidden className="hero-glow pointer-events-none absolute inset-x-0 top-0 h-[36rem]" />
-          <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-16 text-center sm:px-6 sm:pt-24">
-            <Reveal>
-              <span className="badge badge-primary gap-2 px-4 py-1.5 text-sm">
-                <Icon name="sparkles" size={16} />
+        <section className="mesh noise-overlay relative">
+          {/* floating orbs */}
+          <div aria-hidden className="orb orb-blue anim-orb left-[-6rem] top-16 h-72 w-72" />
+          <div aria-hidden className="orb orb-violet anim-orb-late right-[-4rem] top-40 h-80 w-80" />
+          <div aria-hidden className="orb orb-amber left-1/3 top-[30rem] h-64 w-64" />
+
+          <div className="relative z-10 mx-auto max-w-7xl px-4 pb-20 pt-20 sm:px-6 sm:pt-28">
+            <Reveal className="text-center">
+              <span className="glass inline-flex items-center gap-2.5 rounded-full px-4 py-2 text-sm font-semibold text-muted">
+                <span className="live-dot" />
                 {t("badge")}
               </span>
-            </Reveal>
-            <Reveal delay={60}>
-              <p className="mt-6 font-serif text-xl italic text-muted sm:text-2xl">
-                {t("heroTagline")}
-              </p>
-            </Reveal>
-            <Reveal delay={100}>
-              <h1 className="mx-auto mt-3 max-w-4xl text-balance text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-7xl">
+              <h1 className="text-display mx-auto mt-7 max-w-4xl text-balance">
                 {t("heroTitle")}
+                <span className="text-gradient block">{t("heroHighlight")}</span>
               </h1>
-            </Reveal>
-            <Reveal delay={160}>
-              <span className="text-gradient mt-4 block font-serif text-2xl font-medium italic leading-snug sm:text-4xl">
-                {t("heroHighlight")}
-              </span>
-            </Reveal>
-            <Reveal delay={220}>
-              <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-muted sm:text-xl">
+              <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-muted sm:text-xl">
                 {t("heroSubtitle")}
               </p>
             </Reveal>
-            <Reveal delay={280}>
+
+            <Reveal delay={120}>
               <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                <Link href="/register" className="btn btn-primary btn-lg w-full shadow-raised sm:w-auto">
+                <Link
+                  href="/register"
+                  className="btn btn-cta btn-lg w-full px-8 py-3.5 text-base sm:w-auto"
+                >
                   <Icon name="rocket" size={18} />
                   {t("ctaStart")}
                 </Link>
-                <Link href="/login" className="btn btn-secondary btn-lg w-full sm:w-auto">
+                <Link
+                  href="/login"
+                  className="btn btn-secondary btn-lg w-full border-border-strong bg-surface/60 px-8 py-3.5 text-base backdrop-blur-sm sm:w-auto"
+                >
                   {t("ctaLogin")}
                 </Link>
               </div>
-              <p className="mt-5 flex items-center justify-center gap-2 text-sm text-subtle">
+              <p className="mt-6 flex items-center justify-center gap-2 text-sm text-subtle">
                 <Icon name="checkCircle" size={16} />
                 {t("heroProof")}
               </p>
             </Reveal>
-          </div>
 
-          {/* Product shot */}
-          <Reveal delay={340} className="relative mx-auto max-w-5xl px-4 sm:px-6">
-            <div aria-hidden className="accent-blob pointer-events-none absolute -inset-8 -z-10 rounded-[3rem] opacity-70 blur-2xl" />
-            <div className="lift relative overflow-hidden rounded-3xl border border-border-strong bg-surface shadow-popover ring-1 ring-black/5 dark:ring-white/10">
-              <ExamAppMockup className="h-auto w-full" />
-            </div>
-          </Reveal>
+            {/* Product shot */}
+            <Reveal delay={220}>
+              <div className="relative mx-auto mt-16 max-w-5xl">
+                <div aria-hidden className="orb orb-blue -inset-10 absolute opacity-70" />
+                <div className="screen glass relative z-10 !border-transparent ring-1 ring-black/5 dark:ring-white/10">
+                  <ExamAppMockup className="h-auto w-full" />
+                </div>
+              </div>
+            </Reveal>
+          </div>
         </section>
 
-        {/* ============ STATS ============ */}
-        <section className="mx-auto -mt-0 max-w-7xl px-4 pb-4 pt-10 sm:px-6">
+        {/* ============ STATS (glass strip) ============ */}
+        <section className="relative z-10 mx-auto -mt-8 max-w-7xl px-4 sm:px-6">
           <Reveal>
-            <div className="grid grid-cols-2 gap-4 rounded-3xl border border-border bg-surface p-4 shadow-raised sm:grid-cols-4 sm:p-6">
+            <div className="glass-strong -mt-6 grid grid-cols-2 gap-4 rounded-[1.75rem] p-6 sm:mt-0 sm:grid-cols-4 sm:p-8">
               {STATS.map((s, i) => (
-                <div key={s.key} className="flex flex-col items-center px-2 py-3 text-center">
-                  <div className={`mb-2 flex h-10 w-10 items-center justify-center rounded-2xl ${i % 2 ? "bg-accent-soft text-accent" : "bg-primary-soft text-primary"}`}>
-                    <Icon name={s.icon} size={19} />
+                <div key={s.key} className="flex flex-col items-center px-2 text-center">
+                  <div className={`mb-2.5 flex h-11 w-11 items-center justify-center rounded-2xl ${i % 2 ? "bg-accent-soft text-accent" : "bg-primary-soft text-primary"}`}>
+                    <Icon name={s.icon} size={20} />
                   </div>
-                  <p className="text-2xl font-extrabold tabular-nums">{s.value}</p>
-                  <p className="text-sm text-muted">{t(s.key)}</p>
+                  <p className="text-3xl font-extrabold tabular-nums tracking-tight">
+                    {s.value}
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-muted">{t(s.key)}</p>
                 </div>
               ))}
             </div>
           </Reveal>
         </section>
 
-        {/* ============ SHOWCASE — Practice ============ */}
+        {/* ============ BENTO FEATURES ============ */}
         <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6">
           <Reveal>
-            <div className="mb-16 text-center">
-              <span className="badge badge-neutral mb-4">
-                <Icon name="command" size={15} />
-                01
+            <div className="mx-auto mb-14 max-w-2xl text-center">
+              <span className="badge badge-primary mb-4">
+                <Icon name="sparkles" size={15} />
+                {t("badgeShort")}
               </span>
-              <h2 className="text-h2 mx-auto max-w-2xl text-balance">{t("showcaseTitle")}</h2>
+              <h2 className="text-display-sm text-balance">{t("featuresTitle")}</h2>
+              <p className="mt-4 text-lg text-muted">{t("featuresSubtitle")}</p>
             </div>
           </Reveal>
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            <Reveal>
-              <div className="lift overflow-hidden rounded-3xl border border-border-strong bg-surface shadow-raised">
-                <StudyMockup className="h-auto w-full" />
+
+          <div className="bento">
+            {/* Practice — large tile with live mockup */}
+            <Reveal className="bento-md">
+              <div className="bento-card h-full p-7 sm:p-8">
+                <div className="flex items-start gap-4">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary">
+                    <Icon name="pencil" size={22} />
+                  </span>
+                  <div>
+                    <h3 className="text-xl font-bold tracking-tight">{t("featPracticeTitle")}</h3>
+                    <p className="mt-1.5 text-sm leading-6 text-muted">{t("featPracticeDesc")}</p>
+                  </div>
+                </div>
+                <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-surface-subtle/60">
+                  <StudyMockup className="h-auto w-full" />
+                </div>
               </div>
             </Reveal>
-            <Reveal delay={120}>
-              <div>
-                <span className="badge badge-primary mb-4">
-                  <Icon name="pencil" size={15} />
-                  {t("showcasePracticeTag")}
-                </span>
-                <h3 className="text-3xl font-bold tracking-tight">
-                  {t("showcasePracticeTitle")}
-                </h3>
-                <p className="mt-4 text-lg leading-7 text-muted">
-                  {t("showcasePracticeDesc")}
-                </p>
-                <ul className="mt-7 flex flex-col gap-3.5">
-                  {[1, 2, 3].map((i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-success-soft text-success">
-                        <Icon name="checkCircle" size={15} />
-                      </span>
-                      <span className="font-medium">
-                        {t(`showcasePracticeP${i}`)}
-                      </span>
-                    </li>
+
+            {/* Exam — dark accent tile */}
+            <Reveal delay={90} className="bento-xs">
+              <div className="bento-card h-full bg-gradient-to-br from-foreground to-surface-raised p-7">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-primary-foreground">
+                  <Icon name="timer" size={22} />
+                </div>
+                <h3 className="mt-5 text-xl font-bold tracking-tight text-primary-foreground">{t("featExamTitle")}</h3>
+                <p className="mt-1.5 text-sm leading-6 text-primary-foreground/70">{t("featExamDesc")}</p>
+                <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-semibold text-primary-foreground">
+                  <Icon name="bolt" size={14} />
+                  {t("featExamChip")}
+                </div>
+              </div>
+            </Reveal>
+
+            {/* Analytics */}
+            <Reveal delay={140} className="bento-xs">
+              <div className="bento-card h-full p-7">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-info-soft text-info">
+                  <Icon name="chart" size={22} />
+                </div>
+                <h3 className="mt-5 text-xl font-bold tracking-tight">{t("featAnalyticsTitle")}</h3>
+                <p className="mt-1.5 text-sm leading-6 text-muted">{t("featAnalyticsDesc")}</p>
+                <div className="mt-6 flex items-end gap-1.5">
+                  {[34, 52, 44, 66, 58, 80].map((h, i) => (
+                    <span key={i} className={`w-full rounded-md bg-gradient-to-t ${i === 5 ? "from-info to-info-soft" : "from-info/70 to-info/30"}`} style={{ height: `${h * 0.55}px` }} />
                   ))}
-                </ul>
-                <Link href="/subjects" className="btn btn-primary btn-sm mt-9">
-                  {t("ctaStart")}
-                  <Icon name="arrowRight" size={16} />
-                </Link>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* University */}
+            <Reveal delay={190} className="bento-xs">
+              <div className="bento-card h-full p-7">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-soft text-accent">
+                  <Icon name="building" size={22} />
+                </div>
+                <h3 className="mt-5 text-xl font-bold tracking-tight">{t("featUniTitle")}</h3>
+                <p className="mt-1.5 text-sm leading-6 text-muted">{t("featUniDesc")}</p>
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {["ToshDTU", "TATU", "O'zMU", "TDTU"].map((u) => (
+                    <span key={u} className="rounded-full border border-border bg-surface-subtle px-3 py-1 text-xs font-semibold text-muted">
+                      {u}
+                    </span>
+                  ))}
+                </div>
               </div>
             </Reveal>
           </div>
         </section>
 
+        {/* ============ SHOWCASE — Practice ============ */}
+        <section className="relative py-24">
+          <div aria-hidden className="orb orb-blue right-[-8rem] top-20 h-80 w-80 opacity-60" />
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6">
+            <div className="grid items-center gap-12 lg:grid-cols-2">
+              <Reveal>
+                <div className="screen relative">
+                  <div aria-hidden className="orb orb-amber -inset-8 absolute opacity-60" />
+                  <div className="screen z-10 border-transparent">
+                    <StudyMockup className="h-auto w-full" />
+                  </div>
+                </div>
+              </Reveal>
+              <Reveal delay={120}>
+                <div>
+                  <span className="badge badge-primary mb-4">
+                    <Icon name="pencil" size={15} />
+                    {t("showcasePracticeTag")}
+                  </span>
+                  <h3 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                    {t("showcasePracticeTitle")}
+                  </h3>
+                  <p className="mt-4 text-lg leading-7 text-muted">
+                    {t("showcasePracticeDesc")}
+                  </p>
+                  <ul className="mt-7 flex flex-col gap-3.5">
+                    {[1, 2, 3].map((i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-success-soft text-success">
+                          <Icon name="checkCircle" size={15} />
+                        </span>
+                        <span className="font-medium">
+                          {t(`showcasePracticeP${i}`)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/subjects" className="btn btn-cta btn-sm mt-9 px-6 py-2.5">
+                    {t("ctaStart")}
+                    <Icon name="arrowRight" size={16} />
+                  </Link>
+                </div>
+              </Reveal>
+            </div>
+          </div>
+        </section>
+
         {/* ============ SHOWCASE — Analytics ============ */}
-        <section className="border-t border-border bg-surface-subtle">
+        <section className="border-t border-border bg-surface-subtle/50">
           <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6">
             <div className="grid items-center gap-12 lg:grid-cols-2">
               <Reveal className="lg:order-2">
-                <div className="lift overflow-hidden rounded-3xl border border-border-strong bg-surface shadow-raised">
-                  <AnalyticsMockup className="h-auto w-full" />
+                <div className="screen relative">
+                  <div aria-hidden className="orb orb-violet -inset-8 absolute opacity-60" />
+                  <div className="screen z-10 border-transparent">
+                    <AnalyticsMockup className="h-auto w-full" />
+                  </div>
                 </div>
               </Reveal>
               <Reveal delay={120} className="lg:order-1">
@@ -229,7 +309,7 @@ export default async function LandingPage({
                     <Icon name="chart" size={15} />
                     {t("showcaseAnalyticsTag")}
                   </span>
-                  <h3 className="text-3xl font-bold tracking-tight">
+                  <h3 className="text-3xl font-bold tracking-tight sm:text-4xl">
                     {t("showcaseAnalyticsTitle")}
                   </h3>
                   <p className="mt-4 text-lg leading-7 text-muted">
@@ -247,7 +327,7 @@ export default async function LandingPage({
                       </li>
                     ))}
                   </ul>
-                  <Link href="/register" className="btn btn-secondary btn-sm mt-9">
+                  <Link href="/register" className="btn btn-cta btn-sm mt-9 px-6 py-2.5">
                     {t("ctaStart")}
                     <Icon name="arrowRight" size={16} />
                   </Link>
@@ -257,75 +337,52 @@ export default async function LandingPage({
           </div>
         </section>
 
-        {/* ============ FEATURES ============ */}
+        {/* ============ HOW IT WORKS ============ */}
         <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6">
           <Reveal>
-            <div className="mb-14 text-center">
-              <h2 className="text-h2">{t("featuresTitle")}</h2>
-              <p className="mt-3 text-lg text-muted">{t("featuresSubtitle")}</p>
+            <div className="mx-auto mb-16 max-w-2xl text-center">
+              <h2 className="text-display-sm text-balance">{t("howItWorksTitle")}</h2>
+              <p className="mt-4 text-lg text-muted">{t("howItWorksSubtitle")}</p>
             </div>
           </Reveal>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {FEATURES.map((f, i) => (
-              <Reveal key={f.key} delay={i * 90}>
-                <div className="card card-hover group h-full rounded-3xl p-6">
-                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-soft text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                    <Icon name={f.icon} />
-                  </div>
-                  <h3 className="mb-2 font-semibold">{t(`${f.feature}Title`)}</h3>
-                  <p className="text-sm leading-6 text-muted">{t(`${f.feature}Desc`)}</p>
+          <div className="grid gap-6 md:grid-cols-3">
+            {([1, 2, 3] as const).map((step, i) => (
+              <Reveal key={step} delay={i * 120}>
+                <div className="bento-card relative p-8">
+                  <span aria-hidden className="ghost-num absolute right-6 top-4">
+                    0{step}
+                  </span>
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-hover text-lg font-bold text-primary-foreground shadow-raised">
+                    {step}
+                  </span>
+                  <h3 className="mt-5 text-xl font-bold tracking-tight">{t(`step${step}Title`)}</h3>
+                  <p className="mt-2 text-sm leading-6 text-muted">{t(`step${step}Desc`)}</p>
                 </div>
               </Reveal>
             ))}
           </div>
         </section>
 
-        {/* ============ HOW IT WORKS ============ */}
-        <section className="border-t border-border bg-surface-subtle">
-          <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6">
-            <Reveal>
-              <div className="mb-14 text-center">
-                <h2 className="text-h2">{t("howItWorksTitle")}</h2>
-                <p className="mt-3 text-lg text-muted">{t("howItWorksSubtitle")}</p>
-              </div>
-            </Reveal>
-            <div className="relative grid gap-10 md:grid-cols-3 md:gap-8">
-              <div
-                aria-hidden
-                className="absolute left-1/2 top-8 hidden h-px w-2/3 -translate-x-1/2 border-t border-dashed border-border-strong md:block"
-              />
-              {([1, 2, 3] as const).map((step, i) => (
-                <Reveal key={step} delay={i * 120}>
-                  <div className="card relative rounded-3xl p-7 text-center">
-                    <span className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-hover text-2xl font-bold text-primary-foreground shadow-raised">
-                      {step}
-                    </span>
-                    <h3 className="mb-2 text-lg font-semibold">{t(`step${step}Title`)}</h3>
-                    <p className="text-sm leading-6 text-muted">{t(`step${step}Desc`)}</p>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* ============ FINAL CTA ============ */}
-        <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6">
+        <section className="mx-auto max-w-7xl px-4 pb-24 sm:px-6">
           <Reveal>
-            <div className="hero-bg relative overflow-hidden rounded-3xl border border-border p-10 text-center sm:p-16">
-              <div aria-hidden className="hero-grid pointer-events-none absolute inset-0 opacity-70" />
-              <div aria-hidden className="accent-blob pointer-events-none absolute -inset-16 opacity-60 blur-3xl" />
-              <div className="relative flex flex-col items-center gap-6">
+            <div className="mesh noise-overlay relative overflow-hidden rounded-[2rem] border border-border p-10 text-center sm:p-16">
+              <div aria-hidden className="orb orb-blue left-[-4rem] top-[-4rem] h-72 w-72 opacity-70" />
+              <div aria-hidden className="orb orb-amber bottom-[-5rem] right-[-3rem] h-72 w-72 opacity-60" />
+              <div className="relative z-10 flex flex-col items-center gap-6">
                 <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-hover text-primary-foreground shadow-raised">
-                  <Icon name="layers" size={26} />
+                  <Icon name="target" size={26} />
                 </span>
-                <h2 className="text-h2 max-w-xl text-balance sm:text-3xl">{t("ctaStart")}</h2>
+                <p className="mt-2 font-serif text-xl italic text-muted sm:text-2xl">
+                  {t("heroTagline")}
+                </p>
+                <h2 className="text-display-sm max-w-2xl text-balance">{t("ctaTitle")}</h2>
                 <div className="flex flex-col gap-3 sm:flex-row">
-                  <Link href="/register" className="btn btn-primary btn-lg">
+                  <Link href="/register" className="btn btn-cta btn-lg px-8 py-3.5">
                     <Icon name="rocket" size={18} />
                     {t("ctaStart")}
                   </Link>
-                  <Link href="/login" className="btn btn-secondary btn-lg">
+                  <Link href="/login" className="btn btn-secondary btn-lg border-border-strong bg-surface px-8 py-3.5">
                     {t("ctaLogin")}
                   </Link>
                 </div>
@@ -334,6 +391,7 @@ export default async function LandingPage({
           </Reveal>
         </section>
       </main>
+
       <Footer />
     </>
   );

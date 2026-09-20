@@ -89,7 +89,10 @@
     "step3Title": "Tahlil qiling",
     "step3Desc": "Natijalaringizni ko'rib, kuchsiz tomonlaringizni mustahkamlang.",
     "showcasePracticeTag": "Mashq",
-    "showcaseAnalyticsTag": "Tahlil"
+    "showcaseAnalyticsTag": "Tahlil",
+    "badgeShort": "Imkoniyatlar",
+    "featExamChip": "Real imtihon rejimi",
+    "ctaTitle": "Oliy ta'limga ishonchli qadam"
   },
   "auth": {
     "welcomeBack": "Xush kelibsiz",
