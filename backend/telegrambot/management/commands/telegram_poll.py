@@ -45,6 +45,8 @@ class Command(BaseCommand):
                 self.stdout.write("\nTo'xtatildi.")
                 self.stdout.flush()
                 return
+            except TimeoutError:
+                logger.warning("Telegram polling vaqti tugadi, davom etiladi")
             except (urlerror.URLError, OSError, ValueError):
                 logger.exception("Telegram polling xatosi")
                 time.sleep(5)
@@ -52,14 +54,14 @@ class Command(BaseCommand):
     def _get_updates(self, offset):
         token = get_bot_token()
         url = _API.format(token=token, method="getUpdates")
-        payload = {"timeout": 50, "allowed_updates": ["message"]}
+        payload = {"timeout": 25, "allowed_updates": ["message"]}
         if offset is not None:
             payload["offset"] = offset
         data = json.dumps(payload).encode("utf-8")
         req = urllib_request.Request(
             url, data=data, headers={"Content-Type": "application/json"}
         )
-        with urllib_request.urlopen(req, timeout=60) as resp:
+        with urllib_request.urlopen(req, timeout=40) as resp:
             return json.loads(resp.read().decode("utf-8"))
 
     def _handle(self, update):
