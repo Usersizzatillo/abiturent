@@ -50,8 +50,8 @@ export function ExamSetup({ subjects, onStart, onHistory }: ExamSetupProps) {
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-10 sm:px-6">
       <div className="flex flex-col items-center gap-2 text-center">
         <span className="badge badge-primary">DTM</span>
-        <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
-        <p className="text-muted">{t("chooseSubject")}</p>
+        <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{t("title")}</h1>
+        <p className="font-serif italic text-subtle">{t("chooseSubject")}</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
@@ -65,7 +65,7 @@ export function ExamSetup({ subjects, onStart, onHistory }: ExamSetupProps) {
               subject?.id === s.id && "border-primary/50 bg-primary-soft"
             )}
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-hover text-sm font-bold text-primary-foreground">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-hover text-sm font-bold text-primary-foreground">
               {(s.code || localizedName(s, locale).charAt(0)).toUpperCase()}
             </span>
             <span className="font-semibold">{localizedName(s, locale)}</span>
@@ -202,7 +202,7 @@ function TimerBadge({ remaining }: { remaining: number }) {
   const ss = String(remaining % 60).padStart(2, "0");
   const danger = remaining <= 60;
   return (
-    <span className={cn("badge", danger ? "badge-danger" : "badge-primary")}>
+    <span className={cn("badge", danger ? "badge-danger" : "badge-warning")}>
       <ClockIcon />
       {t("timeRemaining")}: {mm}:{ss}
     </span>
@@ -468,7 +468,7 @@ function ReportList({ report }: { report: SessionReport | null }) {
   if (!report) return null;
   return (
     <div className="flex flex-col gap-4">
-      <h3 className="text-xl font-bold tracking-tight">{t("review")}</h3>
+      <h3 className="text-xl font-extrabold tracking-tight">{t("review")}</h3>
       {report.questions.map((row) => {
         const questionText =
           locale === "ru"

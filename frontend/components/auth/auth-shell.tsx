@@ -58,7 +58,7 @@ export function AuthShell({
         <div aria-hidden className="hero-grid pointer-events-none absolute inset-0" />
         <div className="relative flex items-center gap-3">
           <Logo />
-          <span className="text-xl font-bold tracking-tight">Abiturend</span>
+          <span className="text-xl font-extrabold tracking-tight">Abiturend</span>
         </div>
 
         <div className="relative mt-auto flex flex-col gap-8">
@@ -101,7 +101,7 @@ export function AuthShell({
         <div className={cn("w-full max-w-md", className)}>
           <div className="card rounded-3xl p-8" style={{ boxShadow: "var(--shadow-raised)" }}>
             <div className="mb-6 text-center">
-              <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+              <h1 className="text-2xl font-extrabold tracking-tight">{title}</h1>
               {subtitle ? (
                 <p className="mt-2 text-sm text-muted">{subtitle}</p>
               ) : null}

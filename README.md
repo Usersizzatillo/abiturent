@@ -20,6 +20,7 @@ ma'lumotlarini boshqaruvchi zamonaviy platforma.
 ├── backend/          # Django REST API
 │   ├── config/       # settings / urls
 │   ├── core/         # tayanch app (health, izoh)
+│   ├── telegrambot/  # Telegram admin bot (bildirishnomalar + statistika)
 │   └── requirements.txt
 ├── frontend/         # Next.js ilova
 │   ├── app/[locale]/ # sahifalar (uz/ru/en)
@@ -45,6 +46,32 @@ python manage.py runserver 0.0.0.0:8000
 ```
 
 Healthcheck: `GET http://127.0.0.1:8000/api/health/`
+
+### Telegram bot
+
+`.env` da token va chat id ko'rsatilgach ishlaydi:
+
+| Env                        | Tavsif                                  |
+| -------------------------- | --------------------------------------- |
+| `TELEGRAM_BOT_TOKEN`       | `@BotFather` -> `/newbot` orqali olinadi |
+| `TELEGRAM_CHAT_ID`         | Admin chat id (`@userinfobot`)           |
+| `TELEGRAM_ALLOWED_CHAT_IDS`| Vergul bilan qo'shimcha chat id'lar      |
+
+- Yangi foydalanuvchi ro'yxatdan o'tganda **avtomatik xabar**
+- O'qituvchi yangi savol qo'shganda **avtomatik xabar** (tekshiruvda)
+- `/stats` — kunlik statistika (foydalanuvchilar, savollar, faollik)
+
+Qo'lda ishga tushirish:
+
+```bash
+cd backend
+python manage.py tg_send "Assalomu alaykum!"
+python manage.py tg_stats                 # kunlik statistika
+python manage.py telegram_poll            # botni uzluksiz ishga tushiradi
+```
+
+> Har kuni avtomatik statistika uchun: `python manage.py tg_stats` ni cron
+> (masalan `0 9 * * *`) ga qo'ying.
 
 ### 2. Frontend
 

@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "questions",
     "practice",
     "universities",
+    "telegrambot",
 ]
 
 MIDDLEWARE = [
@@ -215,3 +216,9 @@ EMAIL_BACKEND = os.environ.get(
     "DJANGO_EMAIL_BACKEND",
     "django.core.mail.backends.console.EmailBackend",
 )
+
+# ---- Telegram bot (admin bildirishnomalar) ---------------------------------
+
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
+TELEGRAM_ALLOWED_CHAT_IDS = env_list("TELEGRAM_ALLOWED_CHAT_IDS", "")

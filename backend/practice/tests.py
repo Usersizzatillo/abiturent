@@ -218,10 +218,12 @@ class PracticeApiTests(APITestCase):
         self.assertEqual(res.data["status"], "in_progress")
         self.assertEqual(res.data["correct_answers"], 1)
         self.assertEqual(len(res.data["questions"]), 2)
-        first = res.data["questions"][0]
-        self.assertEqual(first["is_correct"], True)
-        self.assertEqual(first["selected_option_id"], correct_id)
-        self.assertIn("explanation_uz", first["question"])
+        answered = next(
+            q for q in res.data["questions"] if q["question"]["id"] == self.q1.id
+        )
+        self.assertEqual(answered["is_correct"], True)
+        self.assertEqual(answered["selected_option_id"], correct_id)
+        self.assertIn("explanation_uz", answered["question"])
 
     def test_stats_requires_auth(self):
         fresh = self.client.__class__()

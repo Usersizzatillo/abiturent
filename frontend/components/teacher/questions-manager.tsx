@@ -238,8 +238,8 @@ export function QuestionsManager() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t("questions.title")}</h1>
-          <p className="text-muted">{t("questions.subtitle")}</p>
+          <h1 className="text-3xl font-extrabold tracking-tight">{t("questions.title")}</h1>
+          <p className="font-serif italic text-subtle">{t("questions.subtitle")}</p>
         </div>
         <button type="button" className="btn btn-primary btn-sm" onClick={startCreate}>
           + {t("questions.new")}

@@ -34,7 +34,7 @@ function HistoryList({ onBack }: { onBack: () => void }) {
     <div className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-6">
       <div className="mb-6 flex items-center justify-between">
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-bold tracking-tight">{t("history")}</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight">{t("history")}</h1>
         </div>
         <button type="button" className="btn btn-secondary btn-sm" onClick={onBack}>
           {common("back")}
