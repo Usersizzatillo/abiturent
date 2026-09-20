@@ -1,4 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import Image from "next/image";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Link } from "@/i18n/navigation";
@@ -9,6 +10,7 @@ import { Leaderboard } from "@/components/landing/leaderboard";
 import {
   AnalyticsMockup,
   ExamAppMockup,
+  PHOTOS,
   StudyMockup,
 } from "@/components/landing/illustrations";
 
@@ -244,6 +246,65 @@ export default async function LandingPage({
                 </div>
               </div>
             </Reveal>
+          </div>
+        </section>
+
+        {/* ============ WHY US — photo pillars ============ */}
+        <section className="relative py-24">
+          <div aria-hidden className="orb orb-violet left-[-8rem] top-1/3 h-80 w-80 opacity-50" />
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6">
+            <Reveal>
+              <div className="mx-auto mb-14 max-w-2xl text-center">
+                <span className="badge badge-warning mb-4">
+                  <Icon name="sparkles" size={15} />
+                  {t("whyTag")}
+                </span>
+                <h2 className="text-display-sm text-balance">{t("whyTitle")}</h2>
+                <p className="mt-4 text-lg text-muted">{t("whySubtitle")}</p>
+              </div>
+            </Reveal>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              {(
+                [
+                  { img: PHOTOS.bank, key: "1" },
+                  { img: PHOTOS.conditions, key: "2" },
+                  { img: PHOTOS.analytics, key: "3" },
+                  { img: PHOTOS.mentor, key: "4" },
+                ] as const
+              ).map((card, i) => (
+                <Reveal key={card.key} delay={i * 90}>
+                  <article className="bento-card group h-full overflow-hidden">
+                    <div className="relative h-52 overflow-hidden sm:h-60">
+                      <Image
+                        src={card.img}
+                        alt=""
+                        fill
+                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
+                      <div
+                        aria-hidden
+                        className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent"
+                      />
+                      <div className="absolute bottom-4 left-5 flex items-center gap-3">
+                        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15 text-lg font-extrabold text-white backdrop-blur-md ring-1 ring-white/25">
+                          {card.key}
+                        </span>
+                        <h3 className="text-lg font-bold text-white drop-shadow">
+                          {t(`why${card.key}Title`)}
+                        </h3>
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <p className="text-[15px] leading-7 text-muted">
+                        {t(`why${card.key}Desc`)}
+                      </p>
+                    </div>
+                  </article>
+                </Reveal>
+              ))}
+            </div>
           </div>
         </section>
 

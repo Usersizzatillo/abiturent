@@ -119,7 +119,18 @@
     "directionsTopics": "{count} ta mavzu",
     "directionsStart": "Boshlash",
     "leaderboardEmptyTitle": "Birinchi yetakchi siz bo’ling!",
-    "leaderboardEmptyDesc": "Sinov imtihonini topshiring va reytingda birinchi ishtirokchi bo’ling."
+    "leaderboardEmptyDesc": "Sinov imtihonini topshiring va reytingda birinchi ishtirokchi bo’ling.",
+    "whyTag": "Nima uchun",
+    "whyTitle": "Nega aynan Abiturend?",
+    "whySubtitle": "Har bir narsa — imtihondagi kabi haqiqiy. Yondashuvimizning 4 ustuni.",
+    "why1Title": "Haqiqiy savollar banki",
+    "why1Desc": "25 000+ savol — DTM/BMB formatida, izohli javoblar bilan.",
+    "why2Title": "Haqiqiy imtihon sharoiti",
+    "why2Desc": "Vaqt hisoblagichi, variantlar navigatsiyasi va og‘ishsiz baholash.",
+    "why3Title": "Shaxsiy tahlil",
+    "why3Desc": "Xatolaringiz ustida avtomatik ishlash va zaif mavzularni aniqlash.",
+    "why4Title": "AI mentor",
+    "why4Desc": "Aqlli tavsiyalar: aynan siz uchun mos topshiriqlar."
   },
   "auth": {
     "welcomeBack": "Xush kelibsiz",

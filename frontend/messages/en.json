@@ -119,7 +119,18 @@
     "directionsTopics": "{count} topics",
     "directionsStart": "Start",
     "leaderboardEmptyTitle": "Be the first leader!",
-    "leaderboardEmptyDesc": "Take a mock exam and become the first name on the leaderboard."
+    "leaderboardEmptyDesc": "Take a mock exam and become the first name on the leaderboard.",
+    "whyTag": "Why us",
+    "whyTitle": "Why Abiturend?",
+    "whySubtitle": "Everything feels like the real exam. The 4 pillars of our approach.",
+    "why1Title": "Real question bank",
+    "why1Desc": "25,000+ questions in DTM/BMB format with explanations.",
+    "why2Title": "Real exam conditions",
+    "why2Desc": "Timer, answer-sheet navigation and fair scoring.",
+    "why3Title": "Personal analytics",
+    "why3Desc": "Automatic mistake review and weak-topic detection.",
+    "why4Title": "AI mentor",
+    "why4Desc": "Smart recommendations tailored to you."
   },
   "auth": {
     "welcomeBack": "Welcome back",

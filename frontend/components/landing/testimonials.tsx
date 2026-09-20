@@ -1,13 +1,11 @@
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Reveal } from "./reveal";
 
-const AVATAR_GRADIENTS = [
-  "from-primary to-info",
-  "from-warning to-accent",
-  "from-success to-info",
-  "from-accent to-primary",
-  "from-info to-success",
-  "from-primary to-warning",
+const AVATARS = [
+  "https://randomuser.me/api/portraits/women/44.jpg",
+  "https://randomuser.me/api/portraits/men/32.jpg",
+  "https://randomuser.me/api/portraits/women/68.jpg",
 ];
 
 export function Testimonials() {
@@ -42,11 +40,13 @@ export function Testimonials() {
                   </p>
                 </blockquote>
                 <figcaption className="mt-7 flex items-center gap-3 border-t border-border pt-6">
-                  <span
-                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${AVATAR_GRADIENTS[i]} text-lg font-extrabold text-white shadow-raised`}
-                  >
-                    {t(`testimonial${n}Name`).slice(0, 1)}
-                  </span>
+                  <Image
+                    src={AVATARS[i]}
+                    alt={t(`testimonial${n}Name`)}
+                    width={48}
+                    height={48}
+                    className="h-12 w-12 shrink-0 rounded-full object-cover shadow-raised ring-2 ring-white/60 dark:ring-white/10"
+                  />
                   <div className="flex flex-col">
                     <span className="font-semibold">{t(`testimonial${n}Name`)}</span>
                     <span className="text-sm text-muted">{t(`testimonial${n}Role`)}</span>
