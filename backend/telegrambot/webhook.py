@@ -23,7 +23,8 @@ logger = logging.getLogger(__name__)
 def _secret_ok(request) -> bool:
     secret = getattr(settings, "TELEGRAM_WEBHOOK_SECRET", "") or ""
     if not secret:
-        return True
+        # Fail closed: without a secret the webhook is unusable in production.
+        return bool(getattr(settings, "DEBUG", False))
     header = request.headers.get("X-Telegram-Bot-Api-Secret-Token", "") or ""
     return hmac.compare_digest(header.encode(), secret.encode())
 

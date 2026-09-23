@@ -7,11 +7,11 @@ from urllib import request as urllib_request
 from django.core.management.base import BaseCommand
 
 from telegrambot.services import (
-    _handle_command,
     get_bot_token,
     get_chat_ids,
     is_configured,
 )
+from telegrambot.webhook import _handle_command
 
 logger = logging.getLogger(__name__)
 

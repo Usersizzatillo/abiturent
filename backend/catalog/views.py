@@ -52,3 +52,8 @@ class TopicViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Topic.active.all()
     serializer_class = TopicSerializer
     permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        return Topic.active.all().prefetch_related("subtopics").order_by(
+            "sort_order", "id"
+        )

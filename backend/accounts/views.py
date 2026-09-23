@@ -26,6 +26,7 @@ class CsrfView(APIView):
 @method_decorator(ensure_csrf_cookie, name="dispatch")
 class RegisterView(APIView):
     permission_classes = [AllowAny]
+    throttle_scope = "register"
 
     def post(self, request):
         serializer = RegisterSerializer(
@@ -43,6 +44,7 @@ class RegisterView(APIView):
 @method_decorator(ensure_csrf_cookie, name="dispatch")
 class LoginView(APIView):
     permission_classes = [AllowAny]
+    throttle_scope = "auth"
 
     def post(self, request):
         serializer = LoginSerializer(
@@ -83,6 +85,7 @@ class MeView(APIView):
 
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_scope = "password"
 
     def post(self, request):
         serializer = ChangePasswordSerializer(data=request.data, context={"request": request})

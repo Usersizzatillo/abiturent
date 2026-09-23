@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 
 from .models import Question, QuestionOption
@@ -85,17 +86,19 @@ class QuestionFullSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         options = validated_data.pop("options", [])
         validated_data["created_by"] = self.context["request"].user
-        question = Question.objects.create(**validated_data)
-        self._sync_options(question, options)
+        with transaction.atomic():
+            question = Question.objects.create(**validated_data)
+            self._sync_options(question, options)
         return question
 
     def update(self, instance, validated_data):
         options = validated_data.pop("options", None)
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-        if options is not None:
-            self._sync_options(instance, options)
+        with transaction.atomic():
+            for attr, value in validated_data.items():
+                setattr(instance, attr, value)
+            instance.save()
+            if options is not None:
+                self._sync_options(instance, options)
         return instance
 
     def _sync_options(self, question, options):

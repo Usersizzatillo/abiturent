@@ -85,13 +85,20 @@ class PracticeAnswerInSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         session = self.context["session"]
-        practice_answer = session.answers.filter(
-            question_id=attrs["question_id"], selected_option__isnull=False
-        ).first()
-        if practice_answer is not None:
+        answer = (
+            session.answers.filter(question_id=attrs["question_id"])
+            .select_related("question")
+            .first()
+        )
+        if answer is None:
+            raise serializers.ValidationError(
+                {"question_id": "Savol sessiyaga tegishli emas."}
+            )
+        if answer.selected_option is not None:
             raise serializers.ValidationError(
                 {"question_id": "Bu savolga allaqachon javob berilgan."}
             )
+        attrs["practice_answer"] = answer
         return attrs
 
 

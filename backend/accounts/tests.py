@@ -94,3 +94,20 @@ class AuthApiTests(TestCase):
             {"username": "teach", "password": "StrongPass123!", "role": "teacher"},
         )
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_cannot_self_promote_role(self):
+        User.objects.create_user(username="troll", password="StrongPass123!")
+        self._post(
+            "/api/auth/login/",
+            {"username": "troll", "password": "StrongPass123!"},
+        )
+        token = self._csrf_token()
+        res = self.client.patch(
+            "/api/auth/me/",
+            {"role": "admin"},
+            format="json",
+            HTTP_X_CSRFTOKEN=token,
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        user = User.objects.get(username="troll")
+        self.assertEqual(user.role, User.Role.STUDENT)

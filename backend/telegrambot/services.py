@@ -237,7 +237,7 @@ def leaderboard_text(limit=10):
             ),
         )
         .filter(finished__gt=0, is_active=True)
-        .exclude(is_staff=True, is_superuser=True)
+        .exclude(Q(is_staff=True) | Q(is_superuser=True))
         .order_by("-correct", "-total")[:limit]
     )
     if not qs.exists():

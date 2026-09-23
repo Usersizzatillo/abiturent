@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Abiturend вЂ” DTM imtihonlariga tayyorgarlik platformasi",
+    "title": "Abiturend — DTM imtihonlariga tayyorgarlik platformasi",
     "description": "Abituriyentlar uchun zamonaviy ta'lim, test va imtihon tayyorgarlik platformasi."
   },
   "nav": {
@@ -15,7 +15,8 @@
     "logout": "Chiqish",
     "teacherPanel": "O'qituvchi paneli",
     "language": "Til",
-    "telegramBot": "Telegram bot"
+    "telegramBot": "Telegram bot",
+    "menu": "Menyu"
   },
   "common": {
     "loading": "Yuklanmoqda...",
@@ -51,7 +52,7 @@
     "heroTagline": "Imtihonlardan ishonch bilan o'tganing — kelajagingiz shu yerdan boshlanadi",
     "heroTitle": "Oliy ta'limga ishonchli qadam",
     "heroHighlight": "o'rganing, mashq qiling, natijani tahlil qiling",
-    "heroSubtitle": "Abituriyentlar uchun zamonaviy mashq, sinov imtihonlari va natijalar tahlili вЂ” bir platformada.",
+    "heroSubtitle": "Abituriyentlar uchun zamonaviy mashq, sinov imtihonlari va natijalar tahlili — bir platformada.",
     "ctaStart": "Bepul boshlash",
     "ctaLogin": "Kirish",
     "heroProof": "Xar kuni minglab abituriyent mazkur platforma bilan tayyorlanmoqda",
@@ -66,7 +67,7 @@
     "showcasePracticeP2": "Har bir javobdan so'ng darhol izoh",
     "showcasePracticeP3": "Xatolaringiz avtomatik to'plamiga tushadi",
     "showcaseAnalyticsTitle": "Natijalaringizni chuqur tahlil qiling",
-    "showcaseAnalyticsDesc": "Ball, foiz, mavzu kesimida yutuq va kuchsiz tomonlaringiz вЂ” hammasi aniq ko'rsatkichlarda.",
+    "showcaseAnalyticsDesc": "Ball, foiz, mavzu kesimida yutuq va kuchsiz tomonlaringiz — hammasi aniq ko'rsatkichlarda.",
     "showcaseAnalyticsP1": "Mavzular kesimida batafsil tahlil",
     "showcaseAnalyticsP2": "Progress va qator (streak) statistikasi",
     "showcaseAnalyticsP3": "Oqilona tavsiyalangan mavzular",
@@ -189,10 +190,10 @@
     "date": "Sana",
     "modePractice": "Mashq",
     "modeExam": "Sinov imtihoni",
-    "error": "Statistikani yuklab bo´lmadi",
+    "error": "Statistikani yuklab bo’lmadi",
     "retry": "Qayta urinish",
     "streakLabel": "kun",
-    "emptyState": "Hozircha ma´lumot yo´q",
+    "emptyState": "Hozircha ma’lumot yo’q",
     "inProgress": "Jarayonda"
   },
   "subjects": {
@@ -300,5 +301,13 @@
     "years": "yil",
     "allSubjects": "Barcha fanlar",
     "subjectHint": "Fanni bosib qaysi OTMlarda shu fan bo'yicha yo'nalish borligini ko'ring"
+  },
+  "footer": {
+    "brandTagline": "DTM / BMB imtihonlariga tayyorgarlik platformasi",
+    "brandDesc": "Oliy ta'limga ishonchli qadam — mashq, sinov imtihonlari va natijalar tahlili bir platformada.",
+    "platform": "Platforma",
+    "services": "Xizmatlar",
+    "rights": "Barcha huquqlar himoyalangan.",
+    "location": "O'zbekiston · Oliy ta'lim tayyorgarlik platformasi"
   }
 }

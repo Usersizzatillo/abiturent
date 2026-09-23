@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { LocaleSwitcher } from "./locale-switcher";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
+import { MobileNav } from "./mobile-nav";
 
 export function Header() {
   const t = useTranslations("nav");
@@ -37,6 +38,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <MobileNav />
           <LocaleSwitcher className="hidden sm:block" />
           <ThemeToggle />
           <UserMenu />

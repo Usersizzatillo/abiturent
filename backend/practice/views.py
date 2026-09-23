@@ -47,7 +47,7 @@ class LeaderboardView(APIView):
                 ),
             )
             .filter(finished_sessions__gt=0, is_active=True)
-            .exclude(is_staff=True, is_superuser=True)
+            .exclude(Q(is_staff=True) | Q(is_superuser=True))
             .order_by("-correct_answers", "-total_answered")[:10]
         )
         for rank, user in enumerate(queryset, start=1):
@@ -63,11 +63,12 @@ class PracticeSessionViewSet(viewsets.ModelViewSet):
     filter_backends = [OrderingFilter]
     ordering_fields = ["id", "started_at", "finished_at", "question_count", "correct_answers"]
     ordering = ["-started_at"]
+    throttle_scope = "answers"
 
     def get_queryset(self):
         return PracticeSession.objects.filter(user=self.request.user).select_related(
             "subject", "topic"
-        ).prefetch_related("answers")
+        )
 
     def create(self, request, *args, **kwargs):
         serializer = PracticeStartSerializer(data=request.data)
@@ -164,15 +165,16 @@ class PracticeSessionViewSet(viewsets.ModelViewSet):
         session = self.get_object()
         if session.status == PracticeSession.Status.FINISHED:
             return Response(
-                {"detail": "Sessiya yakunlangan."}, status=status.HTTP_400_BAD_REQUEST
+                {"detail": "Sessiya yakunlangan."}, status=status.HTTP_409_CONFLICT
             )
         serializer = PracticeAnswerInSerializer(
             data=request.data, context={"session": session}
         )
         serializer.is_valid(raise_exception=True)
-        answer = session.answers.get(question_id=serializer.validated_data["question_id"])
+        answer = serializer.validated_data["practice_answer"]
+        option_id = serializer.validated_data["option_id"]
         try:
-            option = answer.question.options.get(pk=serializer.validated_data["option_id"])
+            option = answer.question.options.get(pk=option_id)
         except QuestionOption.DoesNotExist:
             return Response(
                 {"option_id": "Noto'g'ri variant."}, status=status.HTTP_400_BAD_REQUEST
@@ -192,11 +194,19 @@ class PracticeSessionViewSet(viewsets.ModelViewSet):
         session.progress_index = session.answers.filter(
             selected_option__isnull=False
         ).count()
-        session.save()
+        session.save(update_fields=["correct_answers", "incorrect_answers", "progress_index"])
+        correct_id = answer.question.options.filter(is_correct=True).first().id
+        if session.mode == PracticeSession.Mode.EXAM:
+            return Response(
+                {
+                    "correct_count": session.correct_answers,
+                    "total_count": session.question_count,
+                }
+            )
         result = PracticeAnswerResultSerializer(
             {
                 "is_correct": is_correct,
-                "correct_option_id": answer.question.options.filter(is_correct=True).first().id,
+                "correct_option_id": correct_id,
                 "explanation_uz": answer.question.explanation_uz,
                 "explanation_ru": answer.question.explanation_ru,
                 "explanation_en": answer.question.explanation_en,
@@ -212,16 +222,24 @@ class PracticeSessionViewSet(viewsets.ModelViewSet):
         if session.status == PracticeSession.Status.FINISHED:
             return Response(
                 {"detail": "Sessiya allaqachon yakunlangan."},
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_409_CONFLICT,
             )
         session.status = PracticeSession.Status.FINISHED
         session.finished_at = timezone.now()
-        session.save()
+        session.save(update_fields=["status", "finished_at"])
         return self._finished_report(session)
 
     @action(detail=True, methods=["get"], url_path="report", url_name="report")
     def report(self, request, pk=None):
         session = self.get_object()
+        if (
+            session.mode == PracticeSession.Mode.EXAM
+            and session.status != PracticeSession.Status.FINISHED
+        ):
+            return Response(
+                {"detail": "Imtihon natijalari yakunlangach ko'rinadi."},
+                status=status.HTTP_409_CONFLICT,
+            )
         return self._finished_report(session)
 
     def _finished_report(self, session):

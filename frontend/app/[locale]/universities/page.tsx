@@ -19,9 +19,23 @@ import {
 } from "@/lib/universities";
 import { cn } from "@/lib/utils";
 
-function ArrowIcon() {
+function ArrowIcon({ open = false }: { open?: boolean }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className={cn(
+        "transition-transform duration-200",
+        open && "rotate-90"
+      )}
+    >
       <path d="M5 12h14m-6-6 6 6-6 6" />
     </svg>
   );
@@ -40,6 +54,7 @@ export default function UniversitiesPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [directionsBySubject, setDirectionsBySubject] = useState<Map<number, Direction[]>>(new Map());
   const [detail, setDetail] = useState<Map<string, University>>(new Map());
+  const [detailFailed, setDetailFailed] = useState<Set<string>>(new Set());
 
   const reload = () => {
     Promise.all([
@@ -75,10 +90,21 @@ export default function UniversitiesPage() {
     }
     setExpanded(slug);
     if (!detail.has(slug)) {
-      fetchUniversity(slug)
-        .then((u) => setDetail((prev) => new Map(prev).set(slug, u)))
-        .catch(() => undefined);
+      loadDetail(slug);
     }
+  };
+
+  const loadDetail = (slug: string) => {
+    setDetailFailed((prev) => {
+      const next = new Set(prev);
+      next.delete(slug);
+      return next;
+    });
+    fetchUniversity(slug)
+      .then((u) => setDetail((prev) => new Map(prev).set(slug, u)))
+      .catch(() =>
+        setDetailFailed((prev) => new Set(prev).add(slug))
+      );
   };
 
   const matches = useMemo(() => {
@@ -216,8 +242,19 @@ export default function UniversitiesPage() {
 
                   {isOpen ? (
                     <div className="mt-4 flex flex-col gap-3">
-                      {!directions && activeSubject == null ? (
+                      {activeSubject == null && !directions && !detailFailed.has(u.slug) ? (
                         <Skeleton className="h-24" />
+                      ) : activeSubject == null && detailFailed.has(u.slug) ? (
+                        <div className="flex items-center justify-between gap-3 rounded-xl bg-danger-soft p-3.5">
+                          <span className="text-sm text-danger">{common("error")}</span>
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm shrink-0"
+                            onClick={() => loadDetail(u.slug)}
+                          >
+                            {common("retry")}
+                          </button>
+                        </div>
                       ) : directions && directions.length > 0 ? (
                         directions.map((d) => (
                           <div key={d.id} className="rounded-xl bg-surface-subtle p-3.5">
@@ -260,7 +297,7 @@ export default function UniversitiesPage() {
                     className="btn btn-ghost btn-sm mt-4 self-start"
                   >
                     {isOpen ? common("cancel") : t("directions")}
-                    <ArrowIcon />
+                    <ArrowIcon open={isOpen} />
                   </button>
                 </div>
               );

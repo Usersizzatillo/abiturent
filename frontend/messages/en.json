@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Abiturend вЂ” DTM exam preparation platform",
+    "title": "Abiturend — DTM exam preparation platform",
     "description": "A modern education, testing and exam preparation platform for applicants."
   },
   "nav": {
@@ -15,7 +15,8 @@
     "logout": "Log out",
     "teacherPanel": "Teacher panel",
     "language": "Language",
-    "telegramBot": "Telegram bot"
+    "telegramBot": "Telegram bot",
+    "menu": "Menu"
   },
   "common": {
     "loading": "Loading...",
@@ -51,7 +52,7 @@
     "heroTagline": "Walk into your exams with confidence — your future starts here",
     "heroTitle": "A confident step toward higher education",
     "heroHighlight": "learn, practice and analyze your score",
-    "heroSubtitle": "Modern drills, mock exams and result analytics for applicants вЂ” all in one platform.",
+    "heroSubtitle": "Modern drills, mock exams and result analytics for applicants — all in one platform.",
     "ctaStart": "Start for free",
     "ctaLogin": "Sign in",
     "heroProof": "Thousands of applicants prepare with this platform every day",
@@ -66,7 +67,7 @@
     "showcasePracticeP2": "Instant explanation after every answer",
     "showcasePracticeP3": "Mistakes are collected into your personal list",
     "showcaseAnalyticsTitle": "Deep analysis of your results",
-    "showcaseAnalyticsDesc": "Scores, percentages, wins and weak topics вЂ” all in clear metrics.",
+    "showcaseAnalyticsDesc": "Scores, percentages, wins and weak topics — all in clear metrics.",
     "showcaseAnalyticsP1": "Detailed topic-level breakdown",
     "showcaseAnalyticsP2": "Progress and streak statistics",
     "showcaseAnalyticsP3": "Smart recommended topics",
@@ -300,5 +301,13 @@
     "years": "years",
     "allSubjects": "All subjects",
     "subjectHint": "Pick a subject to see matching directions across universities"
+  },
+  "footer": {
+    "brandTagline": "DTM / BMB exam preparation platform",
+    "brandDesc": "A confident step toward higher education — practice, mock exams and result analysis on one platform.",
+    "platform": "Platform",
+    "services": "Services",
+    "rights": "All rights reserved.",
+    "location": "Uzbekistan · Higher education preparation platform"
   }
 }

@@ -24,6 +24,7 @@ class UniversityViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         return (
             University.active.all()
+            .prefetch_related("directions__subjects")
             .annotate(
                 direction_count=Count(
                     "directions", filter=Q(directions__is_active=True), distinct=True

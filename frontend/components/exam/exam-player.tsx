@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { startPractice, fetchSessionQuestions, submitAnswer, finishSession, type SessionQuestion, type SessionReport, type SessionOption } from "@/lib/sessions";
 import { ApiError, extractFieldError } from "@/lib/api";
 import { localizedName, type Subject } from "@/lib/catalog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 function errorMessage(e: unknown, fallback: string): string {
@@ -253,13 +254,13 @@ export function ExamPlayer({
     if (finished || !sessionId.current || timedOut.current) return;
     timedOut.current = true;
     setSubmitting(true);
-try {
-        const rep = await finishSession(sessionId.current);
-        setReport(rep);
-        setFinished(true);
-      } catch (e) {
-        setError(errorMessage(e, common("error")));
-      } finally {
+    try {
+      const rep = await finishSession(sessionId.current);
+      setReport(rep);
+      setFinished(true);
+    } catch (e) {
+      setError(errorMessage(e, common("error")));
+    } finally {
       setSubmitting(false);
     }
   }, [finished, common]);
@@ -379,8 +380,19 @@ try {
 
   if (pending) {
     return (
-      <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center gap-4 px-4">
-        <span className="text-muted">{common("loading")}</span>
+      <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-5 px-4 py-8 sm:px-6">
+        <div className="flex items-center justify-between gap-3">
+          <Skeleton className="h-9 w-20" />
+          <Skeleton className="h-6 w-32 rounded-full" />
+        </div>
+        <div className="flex gap-1.5">
+          {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+            <Skeleton key={i} className="h-2 flex-1 rounded-full" />
+          ))}
+        </div>
+        <Skeleton className="h-4 w-52" />
+        <Skeleton className="h-56 rounded-3xl" />
+        <Skeleton className="h-12 w-full rounded-xl" />
       </div>
     );
   }

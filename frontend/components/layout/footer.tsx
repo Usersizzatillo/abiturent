@@ -5,6 +5,7 @@ const BOT_URL = "https://t.me/AbituriyentUzbekBot";
 
 export function Footer() {
   const t = useTranslations("nav");
+  const f = useTranslations("footer");
 
   return (
     <footer className="border-t border-border bg-surface/60 backdrop-blur-sm">
@@ -20,19 +21,18 @@ export function Footer() {
                   Abiturend
                 </span>
                 <span className="font-serif italic text-sm text-subtle">
-                  DTM / BMB imtihonlariga tayyorgarlik platformasi
+                  {f("brandTagline")}
                 </span>
               </div>
             </div>
             <p className="max-w-md text-sm leading-6 text-muted">
-              Oliy ta&apos;limga ishonchli qadam — mashq, sinov imtihonlari va
-              natijalar tahlili bir platformada.
+              {f("brandDesc")}
             </p>
           </div>
 
           <div className="flex flex-col gap-2.5">
             <span className="mb-1 text-xs font-semibold uppercase tracking-wider text-subtle">
-              Platforma
+              {f("platform")}
             </span>
             <Link
               href="/subjects"
@@ -56,7 +56,7 @@ export function Footer() {
 
           <div className="flex flex-col gap-2.5">
             <span className="mb-1 text-xs font-semibold uppercase tracking-wider text-subtle">
-              Xizmatlar
+              {f("services")}
             </span>
             <Link
               href="/login"
@@ -85,8 +85,8 @@ export function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-border pt-6 text-xs text-subtle sm:flex-row">
-          <span>© {new Date().getFullYear()} Abiturend. Barcha huquqlar himoyalangan.</span>
-          <span>O&apos;zbekiston · Oliy ta&apos;lim tayyorgarlik platformasi</span>
+          <span>© {new Date().getFullYear()} Abiturend. {f("rights")}</span>
+          <span>{f("location")}</span>
         </div>
       </div>
     </footer>

@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.password_validation import validate_password
+from django.db import IntegrityError, transaction
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
 
@@ -26,7 +27,7 @@ class UserSerializer(serializers.ModelSerializer):
             "date_joined",
             "is_staff",
         ]
-        read_only_fields = ["id", "date_joined", "is_staff"]
+        read_only_fields = ["id", "date_joined", "is_staff", "role"]
 
 
 class RegisterSerializer(serializers.Serializer):
@@ -57,7 +58,13 @@ class RegisterSerializer(serializers.Serializer):
         password = validated_data.pop("password")
         user = User(**validated_data)
         user.set_password(password)
-        user.save()
+        try:
+            with transaction.atomic():
+                user.save()
+        except IntegrityError:
+            raise serializers.ValidationError(
+                {"username": "Bu login band."}
+            )
         return user
 
 

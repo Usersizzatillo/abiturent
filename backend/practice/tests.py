@@ -225,6 +225,59 @@ class PracticeApiTests(APITestCase):
         self.assertEqual(answered["selected_option_id"], correct_id)
         self.assertIn("explanation_uz", answered["question"])
 
+    def test_exam_answer_never_leaks_correctness(self):
+        session = self.client.post(
+            "/api/sessions/",
+            {
+                "subject": self.subject.id,
+                "question_count": 2,
+                "mode": "exam",
+            },
+            format="json",
+        ).data
+        correct_id = self.q1.options.get(is_correct=True).id
+        res = self.client.post(
+            f"/api/sessions/{session['id']}/answer/",
+            {"question_id": self.q1.id, "option_id": correct_id},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertNotIn("is_correct", res.data)
+        self.assertNotIn("correct_option_id", res.data)
+        self.assertNotIn("explanation_uz", res.data)
+
+    def test_exam_report_blocked_until_finished(self):
+        session = self.client.post(
+            "/api/sessions/",
+            {
+                "subject": self.subject.id,
+                "question_count": 2,
+                "mode": "exam",
+            },
+            format="json",
+        ).data
+        res = self.client.get(f"/api/sessions/{session['id']}/report/")
+        self.assertEqual(res.status_code, status.HTTP_409_CONFLICT)
+        finish = self.client.post(f"/api/sessions/{session['id']}/finish/", format="json")
+        self.assertEqual(finish.status_code, status.HTTP_200_OK)
+        after = self.client.get(f"/api/sessions/{session['id']}/report/")
+        self.assertEqual(after.status_code, status.HTTP_200_OK)
+
+    def test_answer_for_foreign_question_rejected(self):
+        session = self._start().data
+        foreign = Question.objects.create(
+            subject=self.subject,
+            text_uz="Boshqa sessiya savoli",
+            status=Question.Status.PUBLISHED,
+        )
+        QuestionOption.objects.create(question=foreign, text_uz="A", is_correct=True, sort_order=0)
+        res = self.client.post(
+            f"/api/sessions/{session['id']}/answer/",
+            {"question_id": foreign.id, "option_id": foreign.options.first().id},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_stats_requires_auth(self):
         fresh = self.client.__class__()
         self.assertEqual(
