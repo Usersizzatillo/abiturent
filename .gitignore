@@ -31,3 +31,5 @@ start*.log
 Thumbs.db
 .idea/
 .vscode/
+# opencode config (API key saqlaydi)
+opencode.json

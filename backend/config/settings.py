@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     "practice",
     "universities",
     "telegrambot",
+    "mcpbridge",
 ]
 
 MIDDLEWARE = [

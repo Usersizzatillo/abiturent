@@ -43,6 +43,28 @@ services:
       - media:/app/media
       - static:/app/staticfiles
 
+  mcp:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    command: python -m mcpbridge.server
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-in-production}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-False}
+      POSTGRES_DB: ${POSTGRES_DB:-abiturend}
+      POSTGRES_USER: ${POSTGRES_USER:-abiturend}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-abiturend}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    expose:
+      - "8001"
+
   frontend:
     build:
       context: ./frontend

@@ -1,0 +1,1 @@
+"""Abiturend MCP bridge — loyiha ma'lumotlarini MCP tool'lari orqali ochadi."""
