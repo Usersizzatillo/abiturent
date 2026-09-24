@@ -162,7 +162,10 @@
     "errorInvalid": "Неверный логин или пароль",
     "errorRequired": "Заполните все поля",
     "successRegister": "Регистрация успешна. Заполните профиль.",
-    "passwordHint": "Минимум 8 символов"
+    "passwordHint": "Минимум 8 символов",
+    "profileSaved": "Профиль успешно сохранён",
+    "passwordChanged": "Пароль успешно изменён",
+    "passwordMismatch": "Новые пароли не совпадают"
   },
   "dashboard": {
     "title": "Панель управления",

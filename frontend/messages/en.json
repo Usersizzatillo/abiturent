@@ -162,7 +162,10 @@
     "errorInvalid": "Invalid username or password",
     "errorRequired": "Please fill in all fields",
     "successRegister": "Registration successful. Please complete your profile.",
-    "passwordHint": "At least 8 characters"
+    "passwordHint": "At least 8 characters",
+    "profileSaved": "Profile saved successfully",
+    "passwordChanged": "Password changed successfully",
+    "passwordMismatch": "New passwords do not match"
   },
   "dashboard": {
     "title": "Dashboard",

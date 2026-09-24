@@ -22,6 +22,7 @@ export default function ProfilePage() {
     phone: user?.phone ?? "",
   });
   const [saved, setSaved] = useState(false);
+  const [passSaved, setPassSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -31,7 +32,7 @@ export default function ProfilePage() {
     confirm: "",
   });
   const [passError, setPassError] = useState<string | null>(null);
-const [passPending, setPassPending] = useState(false);
+  const [passPending, setPassPending] = useState(false);
 
   const saveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,9 +61,9 @@ const [passPending, setPassPending] = useState(false);
     e.preventDefault();
     setPassPending(true);
     setPassError(null);
-    setSaved(false);
+    setPassSaved(false);
     if (pass.new_password !== pass.confirm) {
-      setPassError(t("errorRequired"));
+      setPassError(t("passwordMismatch"));
       setPassPending(false);
       return;
     }
@@ -75,7 +76,7 @@ const [passPending, setPassPending] = useState(false);
         }),
       });
       setPass({ old_password: "", new_password: "", confirm: "" });
-      setSaved(true);
+      setPassSaved(true);
     } catch (err) {
       setPassError(
         err instanceof ApiError
@@ -89,7 +90,7 @@ const [passPending, setPassPending] = useState(false);
     }
   };
 
-return (
+  return (
     <ProtectedShell>
       <div className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-6">
         <div className="bg-navy relative overflow-hidden rounded-3xl p-6 text-white sm:p-8">
@@ -119,8 +120,8 @@ return (
               <CardDescription>{t("username")}</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={saveProfile} className="flex flex-col gap-4">
-                {saved ? <Alert variant="success">{t("successRegister")}</Alert> : null}
+<form onSubmit={saveProfile} className="flex flex-col gap-4">
+                {saved ? <Alert variant="success">{t("profileSaved")}</Alert> : null}
                 {error ? <Alert variant="danger">{error}</Alert> : null}
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Input
@@ -163,8 +164,9 @@ return (
             <CardHeader>
               <CardTitle>{t("forgotTitle")}</CardTitle>
             </CardHeader>
-            <CardContent>
+<CardContent>
               <form onSubmit={changePassword} className="flex flex-col gap-4">
+                {passSaved ? <Alert variant="success">{t("passwordChanged")}</Alert> : null}
                 {passError ? <Alert variant="danger">{passError}</Alert> : null}
                 <Input
                   label={t("oldPassword")}

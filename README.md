@@ -161,6 +161,7 @@ Kunlik statistika (har kuni 09:00):
 - PHASE 6 (Analytics): ✅ `GET /api/stats/summary/` — accuracy, streak, weekly activity, subject breakdown, weak topics, recent sessions; `GET /api/sessions/` list; Dashboard real statistika asosida (Eduva uslubi), subjects katalog izlash + premium kartalar, auth split-screen (Figma mos template'laridan qilingan dizayn upgrade)
 - PHASE 7 (Universities): ✅ `universities` app — University/Direction modellari + admin + seed_universities + `GET /api/universities/`, `/{slug}/`, `/api/directions/?subject=`; universite katalogi: izlash, fan kesimida filter, ochiluvchi yo'nalishlar (fanlar + davomiylik)
 - PHASE 8 (Mock exam): ✅ Sinov imtihoni oqimi — fan/count/vaqt tanlash, taymer (avtomatik yakunlanadi), bepul navigatsiya (`/sessions/{id}/questions/` javob yashirilgan), yakunlanishda score ring + har bir savol bo'yicha tahlil, natijalar tarixi (`/sessions/` exam filter)
-- Backend test: **46/46 PASS** (uni katalogi 6, session report/questions 2 yangi testlar bilan)
+- PHASE 9 (MCP): ✅ `mcpbridge` — Streamable HTTP transport `/mcp/`, 11 tool test PASS, docker `mcp` servisi + nginx proxy
+- Backend test: **73/73 PASS** (accounts 8, catalog 7, core 4, questions 9, practice 18, universities 6, telegrambot 10, MCP 11)
 - Landing: ✅ 3 ta theme-aware SVG illyustratsiya, aurora/grid hero, scroll reveal
 - API indeks: ✅ `GET /api/` — barcha endpointlar katalogi (resolve testi bilan himoyalangan); security header'lar (CSP/RP/Permissions-Policy)

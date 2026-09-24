@@ -52,9 +52,8 @@ export async function fetchSubject(slug: string): Promise<SubjectDetail> {
   return api<SubjectDetail>(`/subjects/${slug}/`);
 }
 
-export async function fetchTopics(subjectId: number): Promise<Topic[]> {
-  const data = await api<Paginated<Topic>>(`/subjects/${subjectId}/topics/?page_size=100`);
-  return data.results;
+export async function fetchTopics(subjectSlug: string): Promise<Topic[]> {
+  return api<Topic[]>(`/subjects/${subjectSlug}/topics/`);
 }
 
 export function localizedName(

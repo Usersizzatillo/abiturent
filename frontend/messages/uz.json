@@ -162,7 +162,10 @@
     "errorInvalid": "Login yoki parol noto'g'ri",
     "errorRequired": "Barcha maydonlarni to'ldiring",
     "successRegister": "Ro'yxatdan o'tish muvaffaqiyatli. Iltimos, profilingizni to'ldiring.",
-    "passwordHint": "Kamida 8 belgi"
+    "passwordHint": "Kamida 8 belgi",
+    "profileSaved": "Profil muvaffaqiyatli saqlandi",
+    "passwordChanged": "Parol muvaffaqiyatli o'zgartirildi",
+    "passwordMismatch": "Yangi parollar mos kelmaydi"
   },
   "dashboard": {
     "title": "Boshqaruv paneli",
