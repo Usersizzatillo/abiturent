@@ -9,6 +9,10 @@ concurrency:
   group: deploy
   cancel-in-progress: true
 
+# NOTE: cancel-in-progress only stops the runner job, NOT remote SSH commands
+# already running on the VPS. The deploy script below uses flock so two builds
+# never run concurrently (they wait), preventing OOM freezes.
+
 jobs:
   deploy:
     name: Deploy to VPS
@@ -29,6 +33,19 @@ jobs:
           script: |
             set -e
             cd /opt/abiturend
+            # Serialize deploys on the VPS: flock waits if another build runs
+            exec 9>/tmp/abiturend-deploy.lock
+            flock -w 2400 9 || { echo "Another deploy holds the lock"; exit 1; }
+            # Ensure swap exists so builds cannot freeze the small VPS (OOM)
+            if ! swapon --show | grep -q .; then
+              if [ ! -f /swapfile ]; then
+                fallocate -l 1G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=1024
+                chmod 600 /swapfile
+                mkswap /swapfile
+              fi
+              swapon /swapfile || true
+              echo '/swapfile none swap sw 0 0' >> /etc/fstab || true
+            fi
             git fetch origin main
             git reset --hard origin/main
             cp -n .env.example .env || true
