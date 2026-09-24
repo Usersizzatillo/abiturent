@@ -195,7 +195,16 @@
     "retry": "Qayta urinish",
     "streakLabel": "kun",
     "emptyState": "Hozircha ma’lumot yo’q",
-    "inProgress": "Jarayonda"
+    "inProgress": "Jarayonda",
+    "mockExamsTitle": "Sinov imtihonlari",
+    "mockExamsSubtitle": "DTM formatidagi to'liq va blokli tayyor sinov imtihonlari",
+    "allExams": "Barcha sinovlar",
+    "dtmBadge": "DTM Standart",
+    "coefficient": "koeffitsiyent",
+    "startMock": "Boshlash",
+    "audio": "Savollar",
+    "diff-medium": "O'rta daraja",
+    "perQ": "savol · {minutes} daqiqa"
   },
   "subjects": {
     "title": "Fanlar",

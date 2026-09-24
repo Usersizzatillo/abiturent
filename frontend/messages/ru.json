@@ -195,7 +195,16 @@
     "retry": "Повторить",
     "streakLabel": "дней",
     "emptyState": "Пока нет данных",
-    "inProgress": "В процессе"
+    "inProgress": "В процессе",
+    "mockExamsTitle": "Пробные экзамены",
+    "mockExamsSubtitle": "Готовые пробные экзамены в формате ДТМ — блочные и полные",
+    "allExams": "Все экзамены",
+    "dtmBadge": "ДТМ Стандарт",
+    "coefficient": "коэффициент",
+    "startMock": "Начать",
+    "audio": "вопросов",
+    "diff-medium": "Средний уровень",
+    "perQ": "вопросов · {minutes} мин"
   },
   "subjects": {
     "title": "Предметы",

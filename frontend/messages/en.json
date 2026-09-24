@@ -195,7 +195,16 @@
     "retry": "Retry",
     "streakLabel": "days",
     "emptyState": "No data yet",
-    "inProgress": "In progress"
+    "inProgress": "In progress",
+    "mockExamsTitle": "Mock exams",
+    "mockExamsSubtitle": "Ready-to-take DTM-style mock tests — full and block formats",
+    "allExams": "All exams",
+    "dtmBadge": "DTM Standard",
+    "coefficient": "coefficient",
+    "startMock": "Start",
+    "audio": "questions",
+    "diff-medium": "Intermediate",
+    "perQ": "questions · {minutes} min"
   },
   "subjects": {
     "title": "Subjects",

@@ -325,6 +325,58 @@ export function DashboardClient() {
             </CardContent>
           </Card>
 
+          {/* Mock exams — ready to take */}
+          <Card className="rounded-2xl bg-navy text-white">
+            <CardHeader className="flex flex-row items-center justify-between gap-2 sm:px-6 sm:pt-6">
+              <div className="flex flex-col gap-0.5">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Icon name="target" size={19} className="text-teal" />
+                  {t("mockExamsTitle")}
+                </CardTitle>
+                <p className="text-sm font-serif italic text-slate-300">{t("mockExamsSubtitle")}</p>
+              </div>
+              <Link href="/mock-exams" className="flex shrink-0 items-center gap-1 text-sm font-semibold text-teal hover:underline">
+                {t("allExams")}
+                <Icon name="arrowRight" size={15} />
+              </Link>
+            </CardHeader>
+            <CardContent className="sm:px-6">
+              {subjRows.length === 0 ? (
+                <p className="py-6 text-center text-sm text-slate-300">{t("emptyState")}</p>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  {subjRows.map((s) => (
+                    <div
+                      key={s.subject_id}
+                      className="bg-white/5 ring-1 ring-white/10 flex flex-col gap-3 rounded-2xl p-5 backdrop-blur-md"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-white">
+                          {t("dtmBadge")}
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-teal/20 px-2 py-0.5 text-[11px] font-semibold text-teal">
+                          1.1 {t("coefficient")}
+                        </span>
+                      </div>
+                      <p className="text-sm font-bold leading-snug">{localSubjectName(s, locale)}</p>
+                      <p className="text-xs text-slate-300">
+                        {s.questions} {t("perQ", { minutes: 120 })}
+                      </p>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] font-medium uppercase tracking-wider text-slate-400">
+                          {t("diff-medium")}
+                        </span>
+                        <Link href={`/subjects/${s.slug}`} className="btn btn-primary btn-sm shadow-lg">
+                          {t("startMock")} →
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Recent sessions */}
           <Card className="rounded-2xl">
             <CardHeader className="flex flex-row items-center justify-between gap-2 sm:px-6 sm:pt-6">
