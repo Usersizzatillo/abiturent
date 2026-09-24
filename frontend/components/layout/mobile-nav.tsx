@@ -69,7 +69,7 @@ export function MobileNav() {
           <div className="absolute right-0 top-0 flex h-full w-80 max-w-[85vw] flex-col border-l border-border bg-surface shadow-popover">
             <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border px-4">
               <span className="flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-hover text-primary-foreground">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-navy text-primary-foreground">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                     <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
                     <path d="M6 12v5c3 3 9 3 12 0v-5" />

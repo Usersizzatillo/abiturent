@@ -75,7 +75,7 @@ export function ExamSetup({ subjects, onStart, onHistory }: ExamSetupProps) {
               subject?.id === s.id && "border-primary/50 bg-primary-soft"
             )}
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-hover text-sm font-bold text-primary-foreground">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-navy text-sm font-bold text-primary-foreground">
               {(s.code || localizedName(s, locale).charAt(0)).toUpperCase()}
             </span>
             <span className="font-semibold">{localizedName(s, locale)}</span>
@@ -350,15 +350,17 @@ export function ExamPlayer({
   if (finished) {
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-10 sm:px-6">
-        <div className="card flex flex-col items-center gap-4 p-8 text-center">
+        <div className="card relative flex flex-col items-center gap-4 overflow-hidden p-8 text-center">
+          <div aria-hidden className="pointer-events-none absolute -right-14 -top-14 h-40 w-40 rounded-full bg-teal/20 blur-3xl" />
+          <span className="badge badge-success">✓ {t("autoFinishNotice")}</span>
           <div className="score-ring score-ring-lg">
-            <span className="text-2xl font-bold">{report?.score_percent ?? 0}%</span>
+            <span className="text-2xl font-bold tabular-nums">{report?.score_percent ?? 0}%</span>
           </div>
           <p className="text-lg font-semibold">{t("resultsSummary")}</p>
           <div className="flex items-center gap-3">
-            <span className="badge badge-success">{report?.correct_answers ?? 0}</span>
-            <span className="badge badge-danger">{report?.incorrect_answers ?? 0}</span>
-            <span className="badge badge-neutral">{report?.unanswered ?? 0}</span>
+            <span className="badge badge-success" title={t("correctAnswer")}>{report?.correct_answers ?? 0} ✓</span>
+            <span className="badge badge-danger" title={t("wrongAnswer")}>{report?.incorrect_answers ?? 0} ✕</span>
+            <span className="badge badge-neutral">{report?.unanswered ?? 0} —</span>
           </div>
           <div className="flex gap-3">
             <button type="button" className="btn btn-secondary" onClick={onExit}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -81,6 +81,13 @@ export function DashboardClient() {
   const subjRows = stats?.subject_breakdown.slice(0, 4) ?? [];
   const displayName = user?.first_name || user?.username || "Abituriyent";
 
+  const dtmDays = useMemo(() => {
+    const target = new Date(new Date().getFullYear(), 5, 15);
+    const now = new Date();
+    const targetTime = now > target ? target.setFullYear(target.getFullYear() + 1) : target.getTime();
+    return Math.max(0, Math.ceil((targetTime - now.getTime()) / 86_400_000));
+  }, []);
+
   const metrics = [
     {
       title: t("overallProgress"),
@@ -116,39 +123,45 @@ export function DashboardClient() {
 
   return (
     <div className="page-enter flex flex-col gap-6">
-      {/* Greeting + streak */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <span className="flex h-13 w-13 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-hover text-xl font-extrabold text-primary-foreground shadow-raised">
-            {displayName.charAt(0).toUpperCase()}
+      <div className="bg-navy relative overflow-hidden rounded-3xl p-6 text-white sm:p-8">
+        <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary/40 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-20 -left-10 h-48 w-48 rounded-full bg-teal/30 blur-3xl" />
+        <div className="relative flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold tracking-wide text-white backdrop-blur-md">
+            <Icon name="target" size={13} />
+            {t("dtmCountdown", { days: dtmDays })}
           </span>
+        </div>
+        <div className="relative mt-4 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-subtle">{t("greeting")}</p>
-            <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">{displayName}</h2>
+            <p className="text-xs font-semibold uppercase tracking-widest text-slate-300">
+              {t("greeting")}
+            </p>
+            <h2 className="mt-1 text-3xl font-extrabold tracking-tight">{displayName}</h2>
+          </div>
+          <div className="flex items-center gap-3">
+            <span
+              className={cn(
+                "badge px-3 py-1.5 text-sm",
+                (stats?.streak ?? 0) > 0 ? "badge-warning" : "bg-white/15 text-white"
+              )}
+            >
+              <Flame size={15} />
+              {(stats?.streak ?? 0) > 0 ? stats!.streak : 0} {t("streak").toLowerCase()}
+            </span>
           </div>
         </div>
-        <span
-          className={cn(
-            "badge gap-1.5 px-3 py-1.5 text-sm",
-            (stats?.streak ?? 0) > 0 ? "badge-warning" : "badge-neutral"
-          )}
-        >
-          <Flame size={15} />
-          {(stats?.streak ?? 0) > 0 ? stats!.streak : 0} {t("streak").toLowerCase()}
-        </span>
-      </div>
-
-      {/* Quick actions */}
-      <div className="flex flex-wrap items-center gap-3">
-        <Link href="/subjects" className="btn btn-primary shadow-raised">
-          {t("startPractice")}
-        </Link>
-        <Link href="/mock-exams" className="btn btn-secondary">
-          {t("takeMockExam")}
-        </Link>
-        <Link href="/profile" className="btn btn-ghost">
-          {t("viewProfile")}
-        </Link>
+        <div className="relative mt-5 flex flex-wrap items-center gap-3">
+          <Link href="/subjects" className="btn btn-primary shadow-lg">
+            {t("startPractice")}
+          </Link>
+          <Link href="/mock-exams" className="bg-white/10 text-white backdrop-blur-md btn hover:bg-white/20">
+            {t("takeMockExam")}
+          </Link>
+          <Link href="/profile" className="text-slate-200 btn btn-ghost hover:bg-white/10 hover:text-white">
+            {t("viewProfile")}
+          </Link>
+        </div>
       </div>
 
       {loading || (authLoading && !stats) ? (
@@ -177,14 +190,16 @@ export function DashboardClient() {
           {/* Metric cards */}
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map((m) => (
-              <Card key={m.title} className="rounded-3xl p-5">
+              <Card key={m.title} className="rounded-2xl p-5">
                 <div className="flex items-start justify-between gap-3">
-                  <CardTitle className="text-sm font-semibold text-muted">{m.title}</CardTitle>
-                  <span className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl", m.tile)}>
+                  <div className="flex flex-col gap-2.5">
+                    <CardTitle className="text-sm font-medium text-muted">{m.title}</CardTitle>
+                    <p className="text-4xl font-extrabold tabular-nums tracking-tight">{m.value}</p>
+                  </div>
+                  <span className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-xl", m.tile)}>
                     {m.icon}
                   </span>
                 </div>
-                <p className="mt-3 text-4xl font-extrabold tabular-nums tracking-tight">{m.value}</p>
                 <div className="mt-2">{m.sub}</div>
               </Card>
             ))}

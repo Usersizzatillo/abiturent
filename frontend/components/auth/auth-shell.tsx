@@ -18,7 +18,7 @@ function Logo({ size = 34 }: { size?: number }) {
   return (
     <Link href="/" aria-label="Abiturend home">
       <span
-        className="flex items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-hover text-primary-foreground shadow-raised"
+        className="flex items-center justify-center rounded-2xl bg-navy text-primary-foreground shadow-raised"
         style={{ height: size, width: size }}
       >
         <svg width={size * 0.55} height={size * 0.55} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>

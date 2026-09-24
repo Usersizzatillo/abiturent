@@ -181,6 +181,7 @@
     "takeMockExam": "Take mock exam",
     "viewProfile": "View profile",
     "streak": "Day streak",
+    "dtmCountdown": "2026/2027 Intake — {days} days until the mock DTM exam",
     "weeklyActivity": "Weekly activity",
     "answered": "Answered",
     "subjectsTitle": "By subject",

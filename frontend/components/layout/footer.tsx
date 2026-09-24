@@ -13,7 +13,7 @@ export function Footer() {
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-hover text-lg font-bold text-primary-foreground shadow-md shadow-primary/25">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-navy text-lg font-bold text-primary-foreground shadow-md shadow-navy/25">
                 A
               </span>
               <div className="flex flex-col">
