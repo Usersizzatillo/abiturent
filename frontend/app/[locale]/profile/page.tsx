@@ -89,11 +89,30 @@ const [passPending, setPassPending] = useState(false);
     }
   };
 
-  return (
+return (
     <ProtectedShell>
       <div className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-6">
-        <h1 className="mb-6 text-3xl font-extrabold tracking-tight">{t("welcomeBack")}</h1>
-        <div className="flex flex-col gap-6">
+        <div className="bg-navy relative overflow-hidden rounded-3xl p-6 text-white sm:p-8">
+          <div aria-hidden className="pointer-events-none absolute -right-14 -top-14 h-48 w-48 rounded-full bg-primary/40 blur-3xl" />
+          <div aria-hidden className="pointer-events-none absolute -bottom-16 -left-8 h-40 w-40 rounded-full bg-teal/30 blur-3xl" />
+          <div className="relative flex flex-wrap items-center gap-4">
+            <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/15 text-2xl font-extrabold text-white ring-1 ring-white/20 backdrop-blur-md">
+              {(user?.first_name?.[0] || user?.username?.[0] || "A").toUpperCase()}
+            </span>
+            <div className="flex flex-col gap-1">
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-300">
+                {t("profile")}
+              </p>
+              <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
+                {user?.first_name || user?.username}
+              </h1>
+              <span className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
+                Abituriyent · {user?.username}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="mt-6 flex flex-col gap-6">
           <Card>
             <CardHeader>
               <CardTitle>{t("profile")}</CardTitle>
