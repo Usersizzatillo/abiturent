@@ -227,7 +227,7 @@ export default function UniversitiesPage() {
               return (
                 <div key={u.id} className={cn("card card-hover flex flex-col p-6", isOpen && "border-primary/50")}>
                   <div className="flex items-start gap-4">
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-hover text-sm font-bold text-primary-foreground shadow-raised">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-navy text-sm font-bold text-primary-foreground shadow-raised">
                       {(u.code || localizedUniversityName(u, locale).charAt(0)).toUpperCase()}
                     </span>
                     <div className="min-w-0 flex-1">

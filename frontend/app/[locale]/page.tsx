@@ -200,7 +200,7 @@ export default async function LandingPage({
 
             {/* Exam — dark accent tile */}
             <Reveal delay={90} className="bento-xs">
-              <div className="bento-card h-full bg-gradient-to-br from-foreground to-surface-raised p-7">
+              <div className="bento-card h-full bg-gradient-to-br from-navy to-navy-hover p-7">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-primary-foreground">
                   <Icon name="timer" size={22} />
                 </div>
@@ -416,7 +416,7 @@ export default async function LandingPage({
                   <span aria-hidden className="ghost-num absolute right-6 top-4">
                     0{step}
                   </span>
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-hover text-lg font-bold text-primary-foreground shadow-raised">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-navy text-lg font-bold text-primary-foreground shadow-raised">
                     {step}
                   </span>
                   <h3 className="mt-5 text-xl font-bold tracking-tight">{t(`step${step}Title`)}</h3>
@@ -443,7 +443,7 @@ export default async function LandingPage({
               <div aria-hidden className="orb orb-blue left-[-4rem] top-[-4rem] h-72 w-72 opacity-70" />
               <div aria-hidden className="orb orb-amber bottom-[-5rem] right-[-3rem] h-72 w-72 opacity-60" />
               <div className="relative z-10 flex flex-col items-center gap-6">
-                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-hover text-primary-foreground shadow-raised">
+                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-navy text-primary-foreground shadow-raised">
                   <Icon name="target" size={26} />
                 </span>
                 <p className="mt-2 font-serif text-xl italic text-muted sm:text-2xl">

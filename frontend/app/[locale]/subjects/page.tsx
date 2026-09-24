@@ -126,7 +126,7 @@ export default function SubjectsPage() {
                     className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary-soft opacity-70 transition-transform duration-300 group-hover:scale-150"
                   />
                   <div className="relative flex flex-col">
-                    <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-hover text-lg font-bold text-primary-foreground shadow-raised">
+                    <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-navy text-lg font-bold text-primary-foreground shadow-raised">
                       {(subject.code || localizedName(subject, locale).charAt(0)).toUpperCase()}
                     </span>
                     <h3 className="text-lg font-semibold tracking-tight">

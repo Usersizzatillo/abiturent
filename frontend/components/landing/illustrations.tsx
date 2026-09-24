@@ -93,7 +93,7 @@ export function ExamAppMockup({ className }: { className?: string }) {
               D
             </span>
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-br from-primary to-primary-hover px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-raised">
+          <span className="inline-flex items-center gap-1.5 rounded-xl bg-navy px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-raised">
             Yuborish
             <span aria-hidden>→</span>
           </span>

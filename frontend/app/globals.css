@@ -541,6 +541,15 @@ h1, h2, h3, h4,
     to { transform: scale(1); opacity: 1; }
   }
 
+  /* Critical-time pulse (< 5 min) */
+  .pulse {
+    animation: pulseSoft 1.2s ease-in-out infinite;
+  }
+  @keyframes pulseSoft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.72; }
+  }
+
   /* Option chip circle */
   .option-key {
     display: inline-flex;
@@ -665,7 +674,7 @@ h1, h2, h3, h4,
     will-change: transform;
   }
   .orb-blue   { background: color-mix(in srgb, var(--primary) 45%, transparent); }
-  .orb-violet { background: color-mix(in srgb, #8b5cf6 40%, transparent); }
+  .orb-violet { background: color-mix(in srgb, var(--teal) 38%, transparent); }
   .orb-amber  { background: color-mix(in srgb, var(--accent) 38%, transparent); }
   .anim-orb      { animation: orbDrift 18s ease-in-out infinite; }
   .anim-orb-late { animation: orbDrift 26s ease-in-out infinite reverse; }

@@ -169,6 +169,7 @@ function OptionRow({
       : locale === "en"
         ? option.text_en || option.text_uz
         : option.text_uz;
+  const letter = String.fromCharCode(65 + option.sort_order);
   return (
     <button
       type="button"
@@ -190,7 +191,7 @@ function OptionRow({
           !selected && !isRevealed && "bg-surface-subtle text-muted"
         )}
       >
-        {option.sort_order + 1}
+        {letter}
       </span>
       <span className="flex-1 text-left text-sm font-medium">{text}</span>
       {state === "correct" ? (
@@ -210,9 +211,10 @@ function TimerBadge({ remaining }: { remaining: number }) {
   const t = useTranslations("exam");
   const mm = String(Math.floor(remaining / 60)).padStart(2, "0");
   const ss = String(remaining % 60).padStart(2, "0");
-  const danger = remaining <= 60;
+  const danger = remaining <= 300;
+  const warn = remaining <= 600 || danger;
   return (
-    <span className={cn("badge", danger ? "badge-danger" : "badge-warning")}>
+    <span className={cn("badge", danger ? "badge-danger pulse" : warn ? "badge-warning" : "badge-neutral")}>
       <ClockIcon />
       {t("timeRemaining")}: {mm}:{ss}
     </span>
@@ -438,9 +440,9 @@ export function ExamPlayer({
             className={cn(
               "h-2 flex-1 rounded-full transition-colors",
               answers[q.id] != null
-                ? "bg-primary"
+                ? "bg-navy"
                 : i === index
-                  ? "bg-subtle"
+                  ? "bg-primary"
                   : "bg-surface-subtle"
             )}
           />
