@@ -38,6 +38,14 @@ jobs:
             # not wait for it — report and let the next run pick it up).
             exec 9>/tmp/abiturend-deploy.lock
             flock -n 9 || { echo "Another deploy is still running on this server"; exit 1; }
+            # Fix broken DNS (observed after reboots): ensure outbound resolution
+            # works for github.com and package registries before building.
+            if ! timeout 5 getent hosts github.com >/dev/null 2>&1; then
+              rm -f /etc/resolv.conf
+              printf 'nameserver 1.1.1.1\nnameserver 8.8.8.8\n' > /etc/resolv.conf
+              systemctl restart systemd-resolved 2>/dev/null || true
+              timeout 10 getent hosts github.com >/dev/null 2>&1 || true
+            fi
             # Ensure swap exists so builds cannot freeze the small VPS (OOM)
             if ! swapon --show | grep -q .; then
               if [ ! -f /swapfile ]; then
