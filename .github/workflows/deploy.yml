@@ -10,8 +10,8 @@ concurrency:
   cancel-in-progress: true
 
 # NOTE: cancel-in-progress only stops the runner job, NOT remote SSH commands
-# already running on the VPS. The deploy script below uses flock so two builds
-# never run concurrently (they wait), preventing OOM freezes.
+# already running on the VPS. The deploy script below uses flock: if a build is
+# still running it fails fast so two builds never run concurrently.
 
 jobs:
   deploy:
@@ -33,13 +33,15 @@ jobs:
           script: |
             set -e
             cd /opt/abiturend
-            # Serialize deploys on the VPS: flock waits if another build runs
+            # Serialize deploys: flock fails fast if another build still runs
+            # (a cancelled GitHub run may leave the remote process alive, so do
+            # not wait for it — report and let the next run pick it up).
             exec 9>/tmp/abiturend-deploy.lock
-            flock -w 2400 9 || { echo "Another deploy holds the lock"; exit 1; }
+            flock -n 9 || { echo "Another deploy is still running on this server"; exit 1; }
             # Ensure swap exists so builds cannot freeze the small VPS (OOM)
             if ! swapon --show | grep -q .; then
               if [ ! -f /swapfile ]; then
-                fallocate -l 1G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=1024
+                fallocate -l 2G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=2048
                 chmod 600 /swapfile
                 mkswap /swapfile
               fi
@@ -49,8 +51,11 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
             cp -n .env.example .env || true
-            docker builder prune -f >/dev/null 2>&1 || true
-            docker compose up -d --build --remove-orphans
+            # IMPORTANT: do NOT prune the builder cache. Keeping it makes every
+            # deploy incremental, so rebuilds are light and never OOM the VPS.
+            export DOCKER_BUILDKIT=1
+            docker compose build
+            docker compose up -d --remove-orphans
             docker compose exec -T backend python manage.py migrate --noinput || true
             docker compose exec -T backend python manage.py collectstatic --noinput || true
             docker compose exec -T backend python manage.py tg_set_webhook --url "https://${{ secrets.DEPLOY_HOST }}/webhooks/telegram/" || true
