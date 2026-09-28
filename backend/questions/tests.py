@@ -141,3 +141,147 @@ class QuestionApiTests(APITestCase):
         res = self.client.get("/api/questions/", {"ordering": "id"})
         ids = [q["id"] for q in res.data["results"]]
         self.assertEqual(ids, [self.q.id])
+
+
+class QuestionOptionSyncTests(APITestCase):
+    """Options carry UNIQUE(question, sort_order); the sync must never collide.
+
+    Reordering, inserting in the middle and removing from the middle all rewrite
+    sort_order in place. Writing the final positions directly makes two rows
+    briefly share a slot, which used to surface as an unhandled IntegrityError
+    (HTTP 500) from the teacher UI.
+    """
+
+    def setUp(self):
+        self.subject = Subject.objects.create(name_uz="Matematika", slug="matematika")
+        self.teacher = User.objects.create_user(
+            username="teacher1", password="Passw0rd!", role=User.Role.TEACHER
+        )
+        self.student = User.objects.create_user(
+            username="student1", password="Passw0rd!", role=User.Role.STUDENT
+        )
+        self.q = Question.objects.create(
+            subject=self.subject,
+            text_uz="2+2?",
+            status=Question.Status.PUBLISHED,
+            created_by=self.teacher,
+        )
+        self.a = QuestionOption.objects.create(
+            question=self.q, text_uz="A", is_correct=True, sort_order=0
+        )
+        self.b = QuestionOption.objects.create(
+            question=self.q, text_uz="B", is_correct=False, sort_order=1
+        )
+        self.c = QuestionOption.objects.create(
+            question=self.q, text_uz="C", is_correct=False, sort_order=2
+        )
+        self.client.force_login(self.teacher)
+
+    def _options_payload(self, *options):
+        return {
+            "options": [
+                {"id": o.id, "text_uz": o.text_uz, "is_correct": o.is_correct}
+                for o in options
+            ]
+        }
+
+    def _order(self):
+        return [
+            (o.id, o.text_uz, o.sort_order)
+            for o in self.q.options.order_by("sort_order", "id")
+        ]
+
+    def test_reorder_options(self):
+        res = self.client.patch(
+            f"/api/questions/{self.q.id}/",
+            self._options_payload(self.b, self.a, self.c),
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            self._order(), [(self.b.id, "B", 0), (self.a.id, "A", 1), (self.c.id, "C", 2)]
+        )
+
+    def test_reverse_reorder_options(self):
+        res = self.client.patch(
+            f"/api/questions/{self.q.id}/",
+            self._options_payload(self.c, self.b, self.a),
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            self._order(), [(self.c.id, "C", 0), (self.b.id, "B", 1), (self.a.id, "A", 2)]
+        )
+
+    def test_insert_option_in_middle(self):
+        res = self.client.patch(
+            f"/api/questions/{self.q.id}/",
+            {
+                "options": [
+                    {"id": self.a.id, "text_uz": "A", "is_correct": True},
+                    {"text_uz": "Yangi", "is_correct": False},
+                    {"id": self.b.id, "text_uz": "B", "is_correct": False},
+                    {"id": self.c.id, "text_uz": "C", "is_correct": False},
+                ]
+            },
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.q.options.count(), 4)
+        self.assertEqual(
+            [o.text_uz for o in self.q.options.order_by("sort_order")],
+            ["A", "Yangi", "B", "C"],
+        )
+
+    def test_remove_option_from_middle(self):
+        res = self.client.patch(
+            f"/api/questions/{self.q.id}/",
+            self._options_payload(self.a, self.c),
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual([o.text_uz for o in self.q.options.order_by("sort_order")], ["A", "C"])
+
+    def test_delete_unused_question(self):
+        res = self.client.delete(f"/api/questions/{self.q.id}/")
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Question.objects.filter(pk=self.q.id).exists())
+
+    def test_cannot_remove_option_already_selected_by_student(self):
+        from practice.models import PracticeAnswer, PracticeSession
+
+        session = PracticeSession.objects.create(
+            user=self.student,
+            subject=self.subject,
+            question_count=1,
+            status=PracticeSession.Status.FINISHED,
+        )
+        PracticeAnswer.objects.create(
+            session=session, question=self.q, selected_option=self.c, is_correct=False
+        )
+        res = self.client.patch(
+            f"/api/questions/{self.q.id}/",
+            self._options_payload(self.a, self.b),
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("options", res.data)
+        # The question must be left untouched, not half-rewritten.
+        self.assertEqual(self.q.options.count(), 3)
+        self.assertEqual(
+            [o.text_uz for o in self.q.options.order_by("sort_order")],
+            ["A", "B", "C"],
+        )
+
+    def test_cannot_delete_question_used_in_session(self):
+        from practice.models import PracticeAnswer, PracticeSession
+
+        session = PracticeSession.objects.create(
+            user=self.student, subject=self.subject, question_count=1
+        )
+        PracticeAnswer.objects.create(
+            session=session, question=self.q, selected_option=self.a, is_correct=True
+        )
+        res = self.client.delete(f"/api/questions/{self.q.id}/")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue(Question.objects.filter(pk=self.q.id).exists())

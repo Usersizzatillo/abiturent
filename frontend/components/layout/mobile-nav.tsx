@@ -89,11 +89,15 @@ export function MobileNav() {
 
             <nav className="nice-scroll flex-1 overflow-y-auto px-3 py-4">
               <ul className="flex flex-col gap-1">
-                {([
-                  "/subjects",
-                  "/mock-exams",
-                  "/universities",
-                ] as const).map((href) => (
+                {(
+                  [
+                    ["/subjects", "subjects"],
+                    ["/mock-exams", "mockExams"],
+                    ["/universities", "universities"],
+                    ["/premium", "premium"],
+                    ["/achievements", "achievements"],
+                  ] as const
+                ).map(([href, key]) => (
                   <li key={href}>
                     <Link
                       href={href}
@@ -104,13 +108,7 @@ export function MobileNav() {
                           : "text-muted hover:bg-surface-subtle hover:text-foreground"
                       )}
                     >
-                      {t(
-                        href === "/subjects"
-                          ? "subjects"
-                          : href === "/mock-exams"
-                            ? "mockExams"
-                            : "universities"
-                      )}
+                      {t(key)}
                     </Link>
                   </li>
                 ))}

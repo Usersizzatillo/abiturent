@@ -1,6 +1,8 @@
 from django.db.models import Q
+from django.db.models.deletion import ProtectedError
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 
@@ -37,3 +39,19 @@ class QuestionViewSet(viewsets.ModelViewSet):
         return qs.filter(
             Q(is_active=True), Q(status=Question.Status.PUBLISHED)
         ).prefetch_related("options")
+
+    def perform_destroy(self, instance):
+        """Recorded answers protect a question, so explain instead of 500-ing."""
+        try:
+            instance.delete()
+        except ProtectedError:
+            raise ValidationError(
+                {
+                    "detail": (
+                        "Bu savolni o'chirib bo'lmaydi: u allaqachon abituriyentlar "
+                        "tomatilgan testlarda ishlatilgan. Savolni arxivlang "
+                        "(status=archived) — u testlardan chiqariladi, lekin "
+                        "ma'lumotlar saqlanadi."
+                    )
+                }
+            )

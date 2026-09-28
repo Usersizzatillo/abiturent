@@ -94,10 +94,9 @@ class PracticeAnswerInSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 {"question_id": "Savol sessiyaga tegishli emas."}
             )
-        if answer.selected_option is not None:
-            raise serializers.ValidationError(
-                {"question_id": "Bu savolga allaqachon javob berilgan."}
-            )
+        # Re-answering the same question is allowed: exam mode lets a student go
+        # back and change a choice until the session is finished. The session
+        # counters are recomputed from the answers, so the swap stays consistent.
         attrs["practice_answer"] = answer
         return attrs
 
@@ -121,7 +120,9 @@ class LeaderboardEntrySerializer(serializers.Serializer):
 
 class PracticeAnswerResultSerializer(serializers.Serializer):
     is_correct = serializers.BooleanField()
-    correct_option_id = serializers.IntegerField()
+    # None when the question has no correct option at all (data-quality problem,
+    # not a reason to fail the student's request).
+    correct_option_id = serializers.IntegerField(allow_null=True)
     explanation_uz = serializers.CharField()
     explanation_ru = serializers.CharField()
     explanation_en = serializers.CharField()

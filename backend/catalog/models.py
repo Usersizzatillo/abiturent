@@ -1,7 +1,28 @@
+import uuid
+
 from django.db import models
 from django.utils.text import slugify
 
 from core.models import ActiveManager, TimeStampedModel
+
+_SLUG_MAX = 96
+
+
+def _unique_slug(queryset, raw_name):
+    """Build a slug that is guaranteed to be storable and unique.
+
+    ``slugify`` returns an empty string for names it cannot transliterate (pure
+    Cyrillic, emoji, ...). An empty slug violates nothing on its own but collides
+    with the next empty slug through the unique constraint, which surfaced as an
+    IntegrityError on save, and it also produces a dead URL.
+    """
+    base = slugify(raw_name or "")[:_SLUG_MAX] or uuid.uuid4().hex[:12]
+    candidate = base
+    suffix = 2
+    while queryset.filter(slug=candidate).exists():
+        candidate = f"{base[: _SLUG_MAX - 3]}-{suffix}"
+        suffix += 1
+    return candidate
 
 
 class Subject(TimeStampedModel):
@@ -23,7 +44,7 @@ class Subject(TimeStampedModel):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name_uz or "")[:128]
+            self.slug = _unique_slug(Subject.objects.all(), self.name_uz)
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -55,8 +76,13 @@ class Topic(TimeStampedModel):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            base = slugify(self.name_uz or "")[:96]
-            self.slug = base
+            # Slug uniqueness is scoped to the subject.
+            siblings = (
+                Topic.objects.filter(subject_id=self.subject_id)
+                if self.subject_id
+                else Topic.objects.none()
+            )
+            self.slug = _unique_slug(siblings, self.name_uz)
         super().save(*args, **kwargs)
 
     def __str__(self):

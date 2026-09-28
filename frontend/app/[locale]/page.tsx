@@ -21,6 +21,19 @@ const STATS = [
   { key: "statsUniversities", value: "40+", icon: "building" },
 ] as const;
 
+const CAMPUSES = [
+  "Toshkent Davlat Texnika",
+  "TATU",
+  "O‘zMU",
+  "TDTU",
+  "Buxoro",
+  "Samarqand",
+  "Nukus",
+  "Andijon",
+] as const;
+
+const UNIVERSITIES = ["ToshDTU", "TATU", "O‘zMU", "TDTU", "BuxDU", "SamDU"];
+
 function Icon({ name, size = 22 }: { name: string; size?: number }) {
   const paths: Record<string, React.ReactNode> = {
     users: <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />,
@@ -39,6 +52,12 @@ function Icon({ name, size = 22 }: { name: string; size?: number }) {
     layers: <path d="m12 2 9 5-9 5-9-5 9-5zM3 12l9 5 9-5M3 17l9 5 9-5" />,
     bolt: <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z" />,
     target: <><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></>,
+    compass: <><circle cx="12" cy="12" r="10" /><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" /></>,
+    trending: <><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></>,
+    shield: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
+    cap: <><path d="M22 10 12 5 2 10l10 5 10-5z" /><path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5" /></>,
+    search: <><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></>,
+    play: <polygon points="6 3 20 12 6 21 6 3" />,
   };
   return (
     <svg
@@ -93,18 +112,17 @@ export default async function LandingPage({
       <main className="page-enter flex-1 overflow-x-clip">
         {/* ============ HERO ============ */}
         <section className="mesh noise-overlay relative">
-          {/* floating orbs */}
-          <div aria-hidden className="orb orb-blue anim-orb left-[-6rem] top-16 h-72 w-72" />
-          <div aria-hidden className="orb orb-violet anim-orb-late right-[-4rem] top-40 h-80 w-80" />
-          <div aria-hidden className="orb orb-amber left-1/3 top-[30rem] h-64 w-64" />
+          <div aria-hidden className="orb orb-blue anim-orb left-[-7rem] top-10 h-80 w-80" />
+          <div aria-hidden className="orb orb-violet anim-orb-late right-[-6rem] top-24 h-96 w-96" />
+          <div aria-hidden className="hero-grid absolute inset-0 -z-10" />
 
-          <div className="relative z-10 mx-auto max-w-7xl px-4 pb-20 pt-20 sm:px-6 sm:pt-28">
+          <div className="relative z-10 mx-auto max-w-7xl px-4 pb-20 pt-16 sm:px-6 sm:pt-24">
             <Reveal className="text-center">
               <span className="glass inline-flex items-center gap-2.5 rounded-full px-4 py-2 text-sm font-semibold text-muted">
                 <span className="live-dot" />
                 {t("badge")}
               </span>
-              <h1 className="text-display mx-auto mt-7 max-w-4xl text-balance">
+              <h1 className="text-display mx-auto mt-7 max-w-5xl text-balance">
                 {t("heroTitle")}
                 <span className="text-gradient block">{t("heroHighlight")}</span>
               </h1>
@@ -117,7 +135,7 @@ export default async function LandingPage({
               <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Link
                   href="/register"
-                  className="btn btn-cta btn-lg w-full px-8 py-3.5 text-base sm:w-auto"
+                  className="btn btn-cta btn-lg cta-glow w-full px-8 py-3.5 text-base sm:w-auto"
                 >
                   <Icon name="rocket" size={18} />
                   {t("ctaStart")}
@@ -142,18 +160,58 @@ export default async function LandingPage({
                 <div className="screen glass relative z-10 !border-transparent ring-1 ring-black/5 dark:ring-white/10">
                   <ExamAppMockup className="h-auto w-full" />
                 </div>
+
+                {/* Floating stat chips */}
+                <div className="glass-strong anim-float absolute -left-3 top-10 hidden items-center gap-3 rounded-2xl px-4 py-3 sm:flex lg:-left-12">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft text-primary">
+                    <Icon name="trending" size={19} />
+                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-base font-bold leading-tight tabular-nums">+27%</span>
+                    <span className="text-xs text-muted">{t("statsQuestions")}</span>
+                  </div>
+                </div>
+                <div className="glass-strong anim-float-slow absolute -right-3 bottom-16 hidden items-center gap-3 rounded-2xl px-4 py-3 sm:flex lg:-right-10">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-success-soft text-success">
+                    <Icon name="checkCircle" size={19} />
+                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-base font-bold leading-tight">87%</span>
+                    <span className="text-xs text-muted">{t("statsExams")}</span>
+                  </div>
+                </div>
               </div>
             </Reveal>
           </div>
         </section>
 
-        {/* ============ STATS (glass strip) ============ */}
-        <section className="relative z-10 mx-auto -mt-8 max-w-7xl px-4 sm:px-6">
+        {/* ============ TRUST MARQUEE ============ */}
+        <section className="border-y border-border bg-surface-subtle/40 py-7">
+          <div className="marquee">
+            <div className="marquee-track">
+              {[...CAMPUSES, ...CAMPUSES].map((c, i) => (
+                <span
+                  key={`${c}-${i}`}
+                  className="whitespace-nowrap text-sm font-bold uppercase tracking-[0.18em] text-subtle"
+                >
+                  {c}
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ============ STATS ============ */}
+        <section className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6">
           <Reveal>
-            <div className="glass-strong -mt-6 grid grid-cols-2 gap-4 rounded-[1.75rem] p-6 sm:mt-0 sm:grid-cols-4 sm:p-8">
+            <div className="glass-strong -mt-8 grid grid-cols-2 gap-4 rounded-[1.75rem] p-6 sm:mt-0 sm:grid-cols-4 sm:p-8">
               {STATS.map((s, i) => (
                 <div key={s.key} className="flex flex-col items-center px-2 text-center">
-                  <div className={`mb-2.5 flex h-11 w-11 items-center justify-center rounded-2xl ${i % 2 ? "bg-accent-soft text-accent" : "bg-primary-soft text-primary"}`}>
+                  <div
+                    className={`mb-2.5 flex h-11 w-11 items-center justify-center rounded-2xl ${
+                      i % 2 ? "bg-accent-soft text-accent" : "bg-primary-soft text-primary"
+                    }`}
+                  >
                     <Icon name={s.icon} size={20} />
                   </div>
                   <p className="text-3xl font-extrabold tabular-nums tracking-tight">
@@ -198,15 +256,17 @@ export default async function LandingPage({
               </div>
             </Reveal>
 
-            {/* Exam — dark accent tile */}
+            {/* Mock exam — dark accent tile */}
             <Reveal delay={90} className="bento-xs">
-              <div className="bento-card h-full bg-gradient-to-br from-navy to-navy-hover p-7">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-primary-foreground">
+              <div className="bento-card h-full bg-gradient-to-br from-indigo-600 to-violet-700 p-7 dark:from-indigo-800 dark:to-violet-900">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 text-white">
                   <Icon name="timer" size={22} />
                 </div>
-                <h3 className="mt-5 text-xl font-bold tracking-tight text-primary-foreground">{t("featExamTitle")}</h3>
-                <p className="mt-1.5 text-sm leading-6 text-primary-foreground/70">{t("featExamDesc")}</p>
-                <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-semibold text-primary-foreground">
+                <h3 className="mt-5 text-xl font-bold tracking-tight text-white">
+                  {t("featExamTitle")}
+                </h3>
+                <p className="mt-1.5 text-sm leading-6 text-white/75">{t("featExamDesc")}</p>
+                <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/15 px-3.5 py-1.5 text-xs font-semibold text-white">
                   <Icon name="bolt" size={14} />
                   {t("featExamChip")}
                 </div>
@@ -223,7 +283,13 @@ export default async function LandingPage({
                 <p className="mt-1.5 text-sm leading-6 text-muted">{t("featAnalyticsDesc")}</p>
                 <div className="mt-6 flex items-end gap-1.5">
                   {[34, 52, 44, 66, 58, 80].map((h, i) => (
-                    <span key={i} className={`w-full rounded-md bg-gradient-to-t ${i === 5 ? "from-info to-info-soft" : "from-info/70 to-info/30"}`} style={{ height: `${h * 0.55}px` }} />
+                    <span
+                      key={i}
+                      className={`w-full rounded-md bg-gradient-to-t ${
+                        i === 5 ? "from-info to-info/40" : "from-info/70 to-info/25"
+                      }`}
+                      style={{ height: `${h * 0.55}px` }}
+                    />
                   ))}
                 </div>
               </div>
@@ -233,13 +299,16 @@ export default async function LandingPage({
             <Reveal delay={190} className="bento-xs">
               <div className="bento-card h-full p-7">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-soft text-accent">
-                  <Icon name="building" size={22} />
+                  <Icon name="cap" size={22} />
                 </div>
                 <h3 className="mt-5 text-xl font-bold tracking-tight">{t("featUniTitle")}</h3>
                 <p className="mt-1.5 text-sm leading-6 text-muted">{t("featUniDesc")}</p>
                 <div className="mt-6 flex flex-wrap gap-2">
-                  {["ToshDTU", "TATU", "O'zMU", "TDTU"].map((u) => (
-                    <span key={u} className="rounded-full border border-border bg-surface-subtle px-3 py-1 text-xs font-semibold text-muted">
+                  {UNIVERSITIES.map((u) => (
+                    <span
+                      key={u}
+                      className="rounded-full border border-border bg-surface-subtle px-3 py-1 text-xs font-semibold text-muted"
+                    >
                       {u}
                     </span>
                   ))}
@@ -249,64 +318,10 @@ export default async function LandingPage({
           </div>
         </section>
 
-        {/* ============ WHY US — photo pillars ============ */}
-        <section className="relative py-24">
-          <div aria-hidden className="orb orb-violet left-[-8rem] top-1/3 h-80 w-80 opacity-50" />
-          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6">
-            <Reveal>
-              <div className="mx-auto mb-14 max-w-2xl text-center">
-                <span className="badge badge-warning mb-4">
-                  <Icon name="sparkles" size={15} />
-                  {t("whyTag")}
-                </span>
-                <h2 className="text-display-sm text-balance">{t("whyTitle")}</h2>
-                <p className="mt-4 text-lg text-muted">{t("whySubtitle")}</p>
-              </div>
-            </Reveal>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              {(
-                [
-                  { img: PHOTOS.bank, key: "1" },
-                  { img: PHOTOS.conditions, key: "2" },
-                  { img: PHOTOS.analytics, key: "3" },
-                  { img: PHOTOS.mentor, key: "4" },
-                ] as const
-              ).map((card, i) => (
-                <Reveal key={card.key} delay={i * 90}>
-                  <article className="bento-card group h-full overflow-hidden">
-                    <div className="relative h-52 overflow-hidden sm:h-60">
-                      <Image
-                        src={card.img}
-                        alt=""
-                        fill
-                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                      />
-                      <div
-                        aria-hidden
-                        className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent"
-                      />
-                      <div className="absolute bottom-4 left-5 flex items-center gap-3">
-                        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15 text-lg font-extrabold text-white backdrop-blur-md ring-1 ring-white/25">
-                          {card.key}
-                        </span>
-                        <h3 className="text-lg font-bold text-white drop-shadow">
-                          {t(`why${card.key}Title`)}
-                        </h3>
-                      </div>
-                    </div>
-                    <div className="p-6">
-                      <p className="text-[15px] leading-7 text-muted">
-                        {t(`why${card.key}Desc`)}
-                      </p>
-                    </div>
-                  </article>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* ============ SUBJECTS ============ */}
+        <div className="border-t border-border bg-surface-subtle/40">
+          <SubjectsGrid />
+        </div>
 
         {/* ============ SHOWCASE — Practice ============ */}
         <section className="relative py-24">
@@ -339,9 +354,7 @@ export default async function LandingPage({
                         <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-success-soft text-success">
                           <Icon name="checkCircle" size={15} />
                         </span>
-                        <span className="font-medium">
-                          {t(`showcasePracticeP${i}`)}
-                        </span>
+                        <span className="font-medium">{t(`showcasePracticeP${i}`)}</span>
                       </li>
                     ))}
                   </ul>
@@ -385,9 +398,7 @@ export default async function LandingPage({
                         <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-success-soft text-success">
                           <Icon name="checkCircle" size={15} />
                         </span>
-                        <span className="font-medium">
-                          {t(`showcaseAnalyticsP${i}`)}
-                        </span>
+                        <span className="font-medium">{t(`showcaseAnalyticsP${i}`)}</span>
                       </li>
                     ))}
                   </ul>
@@ -397,6 +408,98 @@ export default async function LandingPage({
                   </Link>
                 </div>
               </Reveal>
+            </div>
+          </div>
+        </section>
+
+        {/* ============ UNIVERSITIES ============ */}
+        <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6">
+          <Reveal>
+            <div className="bento-card mesh relative overflow-hidden p-10 sm:p-14">
+              <div aria-hidden className="orb orb-violet right-[-6rem] top-[-6rem] h-72 w-72 opacity-60" />
+              <div className="relative z-10 flex flex-col items-start gap-8 lg:flex-row lg:items-center lg:justify-between">
+                <div className="max-w-xl">
+                  <span className="badge badge-primary mb-4">
+                    <Icon name="cap" size={15} />
+                    {t("uniTag")}
+                  </span>
+                  <h2 className="text-display-sm text-balance">{t("uniTitle")}</h2>
+                  <p className="mt-4 text-lg text-muted">{t("uniSubtitle")}</p>
+                </div>
+                <div className="flex w-full flex-col items-start gap-5 lg:w-auto lg:items-end">
+                  <div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-3 lg:w-64">
+                    {UNIVERSITIES.map((u) => (
+                      <span
+                        key={u}
+                        className="rounded-xl border border-border bg-surface/80 px-3 py-2.5 text-center text-xs font-semibold text-muted backdrop-blur-sm"
+                      >
+                        {u}
+                      </span>
+                    ))}
+                  </div>
+                  <Link href="/universities" className="btn btn-cta px-6 py-2.5">
+                    {t("uniCta")}
+                    <Icon name="arrowRight" size={16} />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </section>
+
+        {/* ============ WHY US — photo pillars ============ */}
+        <section className="relative py-24">
+          <div aria-hidden className="orb orb-violet left-[-8rem] top-1/3 h-80 w-80 opacity-50" />
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6">
+            <Reveal>
+              <div className="mx-auto mb-14 max-w-2xl text-center">
+                <span className="badge badge-warning mb-4">
+                  <Icon name="sparkles" size={15} />
+                  {t("whyTag")}
+                </span>
+                <h2 className="text-display-sm text-balance">{t("whyTitle")}</h2>
+                <p className="mt-4 text-lg text-muted">{t("whySubtitle")}</p>
+              </div>
+            </Reveal>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              {(
+                [
+                  { img: PHOTOS.bank, key: "1" },
+                  { img: PHOTOS.conditions, key: "2" },
+                  { img: PHOTOS.analytics, key: "3" },
+                  { img: PHOTOS.mentor, key: "4" },
+                ] as const
+              ).map((card, i) => (
+                <Reveal key={card.key} delay={i * 90}>
+                  <article className="bento-card group h-full overflow-hidden">
+                    <div className="relative h-52 overflow-hidden sm:h-60">
+                      <Image
+                        src={card.img}
+                        alt=""
+                        fill
+                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
+                      <div
+                        aria-hidden
+                        className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"
+                      />
+                      <div className="absolute bottom-4 left-5 flex items-center gap-3">
+                        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15 text-lg font-extrabold text-white backdrop-blur-md ring-1 ring-white/25">
+                          {card.key}
+                        </span>
+                        <h3 className="text-lg font-bold text-white drop-shadow">
+                          {t(`why${card.key}Title`)}
+                        </h3>
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <p className="text-[15px] leading-7 text-muted">{t(`why${card.key}Desc`)}</p>
+                    </div>
+                  </article>
+                </Reveal>
+              ))}
             </div>
           </div>
         </section>
@@ -416,7 +519,7 @@ export default async function LandingPage({
                   <span aria-hidden className="ghost-num absolute right-6 top-4">
                     0{step}
                   </span>
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-navy text-lg font-bold text-primary-foreground shadow-raised">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 text-lg font-bold text-white shadow-raised">
                     {step}
                   </span>
                   <h3 className="mt-5 text-xl font-bold tracking-tight">{t(`step${step}Title`)}</h3>
@@ -430,9 +533,6 @@ export default async function LandingPage({
         {/* ============ TESTIMONIALS ============ */}
         <Testimonials />
 
-        {/* ============ DIRECTIONS (subjects) ============ */}
-        <SubjectsGrid />
-
         {/* ============ LEADERBOARD ============ */}
         <Leaderboard />
 
@@ -443,19 +543,22 @@ export default async function LandingPage({
               <div aria-hidden className="orb orb-blue left-[-4rem] top-[-4rem] h-72 w-72 opacity-70" />
               <div aria-hidden className="orb orb-amber bottom-[-5rem] right-[-3rem] h-72 w-72 opacity-60" />
               <div className="relative z-10 flex flex-col items-center gap-6">
-                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-navy text-primary-foreground shadow-raised">
+                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 text-white shadow-raised">
                   <Icon name="target" size={26} />
                 </span>
-                <p className="mt-2 font-serif text-xl italic text-muted sm:text-2xl">
+                <p className="font-serif text-xl italic text-muted sm:text-2xl">
                   {t("heroTagline")}
                 </p>
                 <h2 className="text-display-sm max-w-2xl text-balance">{t("ctaTitle")}</h2>
                 <div className="flex flex-col gap-3 sm:flex-row">
-                  <Link href="/register" className="btn btn-cta btn-lg px-8 py-3.5">
+                  <Link href="/register" className="btn btn-cta btn-lg cta-glow px-8 py-3.5">
                     <Icon name="rocket" size={18} />
                     {t("ctaStart")}
                   </Link>
-                  <Link href="/login" className="btn btn-secondary btn-lg border-border-strong bg-surface px-8 py-3.5">
+                  <Link
+                    href="/login"
+                    className="btn btn-secondary btn-lg border-border-strong bg-surface px-8 py-3.5"
+                  >
                     {t("ctaLogin")}
                   </Link>
                 </div>

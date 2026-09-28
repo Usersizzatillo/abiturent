@@ -1,5 +1,7 @@
 from django.contrib import admin
+from django.http import HttpResponse
 
+from .importexport import export_csv
 from .models import Question, QuestionOption
 
 
@@ -17,3 +19,14 @@ class QuestionAdmin(admin.ModelAdmin):
     inlines = [QuestionOptionInline]
     prepopulated_fields = {}
     readonly_fields = ("created_at", "updated_at")
+    actions = ["export_csv"]
+
+    @admin.action(description="Tanlangan savollarni CSV ga eksport qilish")
+    def export_csv(self, request, queryset):
+        if not queryset.exists():
+            self.message_user(request, "Tanlangan savollar yo'q.", level="warning")
+            return
+        csv_text = export_csv(queryset)
+        response = HttpResponse(csv_text, content_type="text/csv")
+        response["Content-Disposition"] = 'attachment; filename="questions.csv"'
+        return response

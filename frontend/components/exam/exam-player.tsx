@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { startPractice, fetchSessionQuestions, submitAnswer, finishSession, type SessionQuestion, type SessionReport, type SessionOption } from "@/lib/sessions";
 import { ApiError, extractFieldError } from "@/lib/api";
 import { localizedName, type Subject } from "@/lib/catalog";
+import { Paywall } from "@/components/premium/paywall";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -234,6 +235,7 @@ export function ExamPlayer({
 }) {
   const t = useTranslations("exam");
   const common = useTranslations("common");
+  const gam = useTranslations("gamification");
   const locale = useLocale();
 
   const [deadline] = useState(() => Date.now() + minutes * 60 * 1000);
@@ -248,19 +250,29 @@ export function ExamPlayer({
   const [pending, setPending] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [paywall, setPaywall] = useState(false);
+  const [finishFailed, setFinishFailed] = useState(false);
 
   const sessionId = useRef<number | null>(null);
-  const timedOut = useRef(false);
+  const finishing = useRef(false);
+  const autoFinished = useRef(false);
 
   const finish = useCallback(async () => {
-    if (finished || !sessionId.current || timedOut.current) return;
-    timedOut.current = true;
+    if (finished || !sessionId.current || finishing.current) return;
+    finishing.current = true;
     setSubmitting(true);
+    setFinishFailed(false);
     try {
       const rep = await finishSession(sessionId.current);
       setReport(rep);
       setFinished(true);
+      setError(null);
     } catch (e) {
+      // A failed finish must stay retryable: clearing the guard lets the student
+      // press finish again instead of being stuck with a dead session.
+      finishing.current = false;
+      setFinishFailed(true);
       setError(errorMessage(e, common("error")));
     } finally {
       setSubmitting(false);
@@ -284,7 +296,13 @@ export function ExamPlayer({
         }
       } catch (e) {
         if (!ignore) {
-          setError(errorMessage(e, common("error")));
+          // 402 = the free daily limit is gone; the student needs a plan, not a retry.
+          if (e instanceof ApiError && e.status === 402) {
+            setPaywall(true);
+          } else {
+            setError(errorMessage(e, common("error")));
+            setLoadFailed(true);
+          }
           setPending(false);
         }
       }
@@ -298,7 +316,12 @@ export function ExamPlayer({
     const interval = setInterval(() => {
       const left = Math.max(0, Math.round((deadline - Date.now()) / 1000));
       setRemaining(left);
-      if (left === 0) finish();
+      // Fire the auto-finish once. Without the latch a failing request would be
+      // retried every second for as long as the tab stays open.
+      if (left === 0 && !autoFinished.current) {
+        autoFinished.current = true;
+        finish();
+      }
     }, 1000);
     return () => clearInterval(interval);
   }, [finish, deadline]);
@@ -312,6 +335,7 @@ export function ExamPlayer({
     try {
       await submitAnswer(sessionId.current, question.id, optId);
       setAnswers((prev) => ({ ...prev, [question.id]: optId }));
+      setError(null);
       if (!(index + 1 < questions.length)) {
         finish();
       } else {
@@ -319,6 +343,7 @@ export function ExamPlayer({
         setSubmitting(false);
       }
     } catch (e) {
+      // Keep the question on screen: a failed submit is recoverable.
       setError(errorMessage(e, common("error")));
       setSubmitting(false);
     }
@@ -364,6 +389,20 @@ export function ExamPlayer({
             <span className="badge badge-danger" title={t("wrongAnswer")}>{report?.incorrect_answers ?? 0} ✕</span>
             <span className="badge badge-neutral">{report?.unanswered ?? 0} —</span>
           </div>
+          {report?.new_badges?.length ? (
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <span className="badge badge-warning">{gam("newBadge")}</span>
+              {report.new_badges.map((b) => (
+                <span key={b.code} className="badge badge-warning">
+                  {locale === "ru"
+                    ? b.name_ru || b.name_uz
+                    : locale === "en"
+                      ? b.name_en || b.name_uz
+                      : b.name_uz}
+                </span>
+              ))}
+            </div>
+          ) : null}
           <div className="flex gap-3">
             <button type="button" className="btn btn-secondary" onClick={onExit}>
               {t("history")}
@@ -401,10 +440,14 @@ export function ExamPlayer({
     );
   }
 
-  if (error) {
+  if (paywall) {
+    return <Paywall onBack={onExit} backLabel={common("back")} />;
+  }
+
+  if (loadFailed) {
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center gap-4 px-4">
-        <span className="text-danger">{error}</span>
+        <span className="text-danger">{error ?? common("error")}</span>
         <button type="button" className="btn btn-secondary btn-sm" onClick={onExit}>
           {common("back")}
         </button>
@@ -428,6 +471,34 @@ export function ExamPlayer({
         </button>
         <TimerBadge remaining={remaining} />
       </div>
+
+      {error ? (
+        <div
+          role="alert"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger"
+        >
+          <span>{error}</span>
+          <span className="flex items-center gap-2">
+            {finishFailed ? (
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={finish}
+                disabled={submitting}
+              >
+                {common("retry")}
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => setError(null)}
+            >
+              {common("cancel")}
+            </button>
+          </span>
+        </div>
+      ) : null}
 
       {/* progress segments */}
       <div className="flex gap-1.5">

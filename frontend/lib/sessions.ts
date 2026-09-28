@@ -51,6 +51,14 @@ export interface AnswerResult {
   total_count: number;
 }
 
+export interface NewBadge {
+  code: string;
+  name_uz: string;
+  name_ru: string;
+  name_en: string;
+  icon: string;
+}
+
 export interface FinishedReport {
   id: number;
   mode: SessionMode;
@@ -63,6 +71,7 @@ export interface FinishedReport {
   score_percent: number;
   started_at: string;
   finished_at: string | null;
+  new_badges?: NewBadge[];
 }
 
 export interface ReviewOption extends SessionOption {

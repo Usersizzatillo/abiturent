@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.db.models.deletion import ProtectedError
 from rest_framework import serializers
 
 from .models import Question, QuestionOption
@@ -8,6 +9,7 @@ class QuestionOptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuestionOption
         fields = ["id", "text_uz", "text_ru", "text_en", "is_correct", "sort_order"]
+        extra_kwargs = {"id": {"required": False, "read_only": False}}
 
 
 def _option_dicts(instances):
@@ -28,6 +30,12 @@ def _renumber(options):
     for idx, opt in enumerate(options):
         opt["sort_order"] = idx
     return options
+
+
+# sort_order is a PositiveIntegerField, so the temporary parking slot used while
+# re-syncing a question's options has to be high and positive rather than negative.
+# Real sort orders are tiny, renumbered from 0 on every write.
+_PARK_BASE = 1_000_000
 
 
 class QuestionFullSerializer(serializers.ModelSerializer):
@@ -102,12 +110,35 @@ class QuestionFullSerializer(serializers.ModelSerializer):
         return instance
 
     def _sync_options(self, question, options):
+        """Persist the submitted option list onto ``question``.
+
+        ``QuestionOption`` carries a UNIQUE (question, sort_order) constraint, so
+        the final positions cannot be written naively: reordering two options, or
+        inserting/removing one in the middle, momentarily assigns a sort_order that
+        a sibling still holds and used to surface as an unhandled IntegrityError
+        (HTTP 500) from the teacher UI.
+
+        Every existing option is therefore first parked on a private high slot, and
+        only then moved to its final index once nothing in the question can collide
+        with it. All of them are parked, not just the ones the payload keeps: an
+        option the teacher removed still occupies its old slot until phase 3
+        deletes it, and would otherwise collide with the survivor that inherits
+        that index.
+        """
+        parked = {obj.pk: obj for obj in question.options.all()}
+
+        # Phase 1 — park all options on unique, out-of-range slots.
+        for offset, obj in enumerate(parked.values(), start=1):
+            obj.sort_order = _PARK_BASE + offset
+            obj.save(update_fields=["sort_order"])
+
+        # Phase 2 — apply the payload (final sort_order included) and insert new
+        # options. No sibling in this question holds a final slot yet. An id that
+        # does not belong to this question is ignored rather than trusted.
         kept = []
         for opt in options:
             opt_id = opt.get("id")
-            obj = None
-            if opt_id:
-                obj = question.options.filter(pk=opt_id).first()
+            obj = parked.get(opt_id) if opt_id else None
             if obj is None:
                 obj = QuestionOption(question=question)
             for key, value in opt.items():
@@ -115,7 +146,23 @@ class QuestionFullSerializer(serializers.ModelSerializer):
                     setattr(obj, key, value)
             obj.save()
             kept.append(obj.id)
-        question.options.exclude(pk__in=kept).delete()
+
+        # Phase 3 — drop the options the teacher removed. Students' recorded
+        # answers protect their option, so surface that as a field error rather
+        # than a 500.
+        try:
+            with transaction.atomic():
+                question.options.exclude(pk__in=kept).delete()
+        except ProtectedError:
+            raise serializers.ValidationError(
+                {
+                    "options": (
+                        "Bu variantni o'chirib bo'lmaydi: u allaqachon abituriyentlar "
+                        "topshirgan testlarda tanlangan. Variantni o'zgartirish "
+                        "yoki savolni arxivlash mumkin."
+                    )
+                }
+            )
 
 
 class QuestionOptionBrowse(serializers.ModelSerializer):

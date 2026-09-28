@@ -8,13 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProtectedShell } from "@/components/layout/protected-shell";
+import { Paywall } from "@/components/premium/paywall";
 import { fetchSubject } from "@/lib/catalog";
+import { ApiError } from "@/lib/api";
 import {
   fetchCurrent,
   finishSession,
   startPractice,
   submitAnswer,
   type AnswerResult,
+  type NewBadge,
   type SessionOption,
   type SessionQuestion,
 } from "@/lib/sessions";
@@ -74,6 +77,7 @@ export function PracticePlayer({ slug }: { slug: string }) {
   const t = useTranslations("common");
   const exam = useTranslations("exam");
   const res = useTranslations("results");
+  const gam = useTranslations("gamification");
   const locale = useLocale();
   const { user } = useAuth();
 
@@ -84,6 +88,10 @@ export function PracticePlayer({ slug }: { slug: string }) {
   const [result, setResult] = useState<AnswerResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [fatal, setFatal] = useState(false);
+  const [paywall, setPaywall] = useState(false);
+  const [newBadges, setNewBadges] = useState<NewBadge[]>([]);
+  const [retry, setRetry] = useState<(() => void) | null>(null);
   const [progress, setProgress] = useState({ answered: 0, total: 0 });
   const [score, setScore] = useState<number | null>(null);
   const [correctTotal, setCorrectTotal] = useState(0);
@@ -108,8 +116,16 @@ export function PracticePlayer({ slug }: { slug: string }) {
           setShuffled(shuffleOptions(sess.current_question.options));
         }
       })
-      .catch(() => {
-        if (!ignore) setError(t("error"));
+      .catch((e) => {
+        if (ignore) return;
+        if (e instanceof ApiError && e.status === 402) {
+          // Daily free limit reached — a plan is needed, retrying won't help.
+          setPaywall(true);
+          return;
+        }
+        // Nothing can be shown without a session: this one really is fatal.
+        setError(t("error"));
+        setFatal(true);
       })
       .finally(() => {
         if (!ignore) setLoading(false);
@@ -125,12 +141,19 @@ export function PracticePlayer({ slug }: { slug: string }) {
     submitAnswer(sessionId, question.id, selected)
       .then((r) => {
         setResult(r);
+        setError(null);
+        setRetry(null);
         setProgress((p) => ({ ...p, answered: p.answered + 1 }));
         setCorrectTotal((c) => c + (r.is_correct ? 1 : 0));
         setStreak((s) => (r.is_correct ? s + 1 : 0));
         setTime((x) => (r.is_correct ? { ...x, correct: x.correct + 1 } : { ...x, wrong: x.wrong + 1 }));
       })
-      .catch(() => setError(t("error")));
+      .catch(() => {
+        // Recoverable: keep the question and the selection so the student can
+        // just press the button again.
+        setError(t("error"));
+        setRetry(answer);
+      });
   };
 
   const next = () => {
@@ -141,6 +164,8 @@ export function PracticePlayer({ slug }: { slug: string }) {
     setLoading(true);
     fetchCurrent(sessionId)
       .then((resQ) => {
+        setError(null);
+        setRetry(null);
         if (resQ.question) {
           setQuestion(resQ.question);
           setShuffled(shuffleOptions(resQ.question.options));
@@ -149,10 +174,14 @@ export function PracticePlayer({ slug }: { slug: string }) {
             setScore(rep.score_percent);
             setCorrectTotal(rep.correct_answers);
             setProgress({ answered: rep.question_count, total: rep.question_count });
+            setNewBadges(rep.new_badges ?? []);
           });
         }
       })
-      .catch(() => setError(t("error")))
+      .catch(() => {
+        setError(t("error"));
+        setRetry(next);
+      })
       .finally(() => setLoading(false));
   };
 
@@ -225,54 +254,107 @@ export function PracticePlayer({ slug }: { slug: string }) {
           ))}
         </div>
 
-        {error ? (
+        {paywall ? (
+          <Paywall onBack={() => window.history.back()} backLabel={t("back")} />
+        ) : fatal ? (
           <div className="card flex flex-col items-center gap-4 p-10 text-center">
             <p className="text-muted">{error}</p>
             <Link href={subjectLink} className="btn btn-secondary btn-sm">
               {t("back")}
             </Link>
           </div>
-        ) : loading ? (
-          <div className="flex flex-col gap-4">
-            <Skeleton className="h-24" />
-            {[0, 1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-14" />
-            ))}
-          </div>
-        ) : score !== null ? (
-          /* Finish — score ring + summary (Quizzler-style) */
-          <Card className="pop flex flex-col items-center gap-6 p-10 text-center">
-            <div className="relative h-36 w-36" style={{ "--p": score } as React.CSSProperties}>
-              <div className="score-ring absolute inset-0" />
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-4xl font-bold tabular-nums">{score}%</span>
-                <span className="text-xs font-medium text-muted">{exam("resultsSummary")}</span>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <div className="flex items-center gap-2 rounded-xl bg-success-soft px-4 py-2.5">
-                <CheckIcon />
-                <span className="text-sm font-semibold text-success">
-                  {time.correct || correctTotal} {res("correct").toLowerCase()}
+        ) : (
+          <>
+            {error && !fatal ? (
+              <div
+                role="alert"
+                className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger"
+              >
+                <span>{error}</span>
+                <span className="flex items-center gap-2">
+                  {retry ? (
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => {
+                        setError(null);
+                        setRetry(null);
+                        retry();
+                      }}
+                      disabled={loading}
+                    >
+                      {t("retry")}
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => {
+                      setError(null);
+                      setRetry(null);
+                    }}
+                  >
+                    {t("cancel")}
+                  </button>
                 </span>
               </div>
-              <div className="flex items-center gap-2 rounded-xl bg-danger-soft px-4 py-2.5">
-                <CrossIcon />
-                <span className="text-sm font-semibold text-danger">
-                  {time.wrong} {res("incorrect").toLowerCase()}
-                </span>
+            ) : null}
+
+            {loading ? (
+              <div className="flex flex-col gap-4">
+                <Skeleton className="h-24" />
+                {[0, 1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-14" />
+                ))}
               </div>
-            </div>
-            <div className="flex w-full max-w-sm flex-col gap-3 sm:flex-row">
-              <Link href={`/subjects/${slug}/practice`} className="btn btn-secondary btn-lg flex-1">
-                {t("again")}
-              </Link>
-              <Link href={subjectLink} className="btn btn-primary btn-lg flex-1">
-                {t("back")}
-              </Link>
-            </div>
-          </Card>
-        ) : question ? (
+            ) : score !== null ? (
+              /* Finish — score ring + summary (Quizzler-style) */
+              <Card className="pop flex flex-col items-center gap-6 p-10 text-center">
+                <div className="relative h-36 w-36" style={{ "--p": score } as React.CSSProperties}>
+                  <div className="score-ring absolute inset-0" />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-4xl font-bold tabular-nums">{score}%</span>
+                    <span className="text-xs font-medium text-muted">{exam("resultsSummary")}</span>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="flex items-center gap-2 rounded-xl bg-success-soft px-4 py-2.5">
+                    <CheckIcon />
+                    <span className="text-sm font-semibold text-success">
+                      {time.correct || correctTotal} {res("correct").toLowerCase()}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 rounded-xl bg-danger-soft px-4 py-2.5">
+                    <CrossIcon />
+                    <span className="text-sm font-semibold text-danger">
+                      {time.wrong} {res("incorrect").toLowerCase()}
+                    </span>
+                  </div>
+                </div>
+                {newBadges.length ? (
+                  <div className="flex flex-wrap items-center justify-center gap-2">
+                    <span className="badge badge-warning">{gam("newBadge")}</span>
+                    {newBadges.map((b) => (
+                      <span key={b.code} className="badge badge-warning">
+                        {locale === "ru"
+                          ? b.name_ru || b.name_uz
+                          : locale === "en"
+                            ? b.name_en || b.name_uz
+                            : b.name_uz}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+                <div className="flex w-full max-w-sm flex-col gap-3 sm:flex-row">
+                  <Link href={`/subjects/${slug}/practice`} className="btn btn-secondary btn-lg flex-1">
+                    {t("again")}
+                  </Link>
+                  <Link href={subjectLink} className="btn btn-primary btn-lg flex-1">
+                    {t("back")}
+                  </Link>
+                </div>
+              </Card>
+            ) : question ? (
           <div className="flex flex-col gap-4">
             <Card className="p-6">
               <p className="text-lg font-medium leading-relaxed">{localText(question, locale)}</p>
@@ -376,6 +458,8 @@ export function PracticePlayer({ slug }: { slug: string }) {
               {t("back")}
             </Link>
           </div>
+        )}
+          </>
         )}
       </div>
     </ProtectedShell>

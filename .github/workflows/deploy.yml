@@ -65,6 +65,9 @@ jobs:
             docker compose build
             docker compose up -d --remove-orphans
             docker compose exec -T backend python manage.py migrate --noinput || true
+            # Idempotent seed data the UI depends on (plans + badges), safe to re-run.
+            docker compose exec -T backend python manage.py seed_premium || true
+            docker compose exec -T backend python manage.py seed_badges || true
             docker compose exec -T backend python manage.py collectstatic --noinput || true
             docker compose exec -T backend python manage.py tg_set_webhook --url "https://${{ secrets.DEPLOY_HOST }}/webhooks/telegram/" || true
             echo "Deploy OK: $(date -u)"

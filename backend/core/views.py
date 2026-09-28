@@ -77,7 +77,13 @@ API_ENDPOINTS = [
         "path": "/api/subjects/{slug}/",
         "method": "GET",
         "auth": "public",
-        "purpose": "A single subject; nested topics are embedded.",
+        "purpose": "A single subject; nested topics with question counts embedded.",
+    },
+    {
+        "path": "/api/subjects/{slug}/topics/",
+        "method": "GET",
+        "auth": "public",
+        "purpose": "Active topics of a subject with their published question counts.",
     },
     {
         "path": "/api/topics/",
@@ -168,6 +174,42 @@ API_ENDPOINTS = [
         "method": "GET",
         "auth": "session",
         "purpose": "Aggregated learner analytics: accuracy, streak, weekly activity, subject breakdown, weak topics, recent sessions.",
+    },
+    {
+        "path": "/api/leaderboard/",
+        "method": "GET",
+        "auth": "public",
+        "purpose": "Top 10 students by correct answers across finished sessions. Staff accounts are excluded.",
+    },
+    {
+        "path": "/api/premium/plans/",
+        "method": "GET",
+        "auth": "public",
+        "purpose": "Active subscription plans (free tier and PRO).",
+    },
+    {
+        "path": "/api/premium/subscription/",
+        "method": "GET",
+        "auth": "session",
+        "purpose": "The current user's subscription status and remaining free sessions today.",
+    },
+    {
+        "path": "/api/premium/subscribe/",
+        "method": "POST",
+        "auth": "session",
+        "purpose": "Activate a plan (free tier now, payment placeholder for paid tiers).",
+    },
+    {
+        "path": "/api/gamification/badges/",
+        "method": "GET",
+        "auth": "session",
+        "purpose": "All badges with the current user's earned state, plus XP and level.",
+    },
+    {
+        "path": "/api/gamification/badges/check/",
+        "method": "POST",
+        "auth": "session",
+        "purpose": "Re-evaluate and persist badges from current stats.",
     },
 ]
 

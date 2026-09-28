@@ -6,6 +6,11 @@ Ikkita transport usuli qo'llab-quvvatlanadi:
   * streamable-http — remote (Stitch-style, docker-compose'dagi `mcp` xizmati)
 
 Ishga tushirish:  python -m mcpbridge.server
+
+Xavfsizlik: HTTP transport `MCP_API_KEY` bearer token'siz so'rovlarni RAD qiladi
+(mcpbridge/auth.py). To'g'ri javoblarni ochadigan `include_answers` esa alohida
+`MCP_ADMIN_API_KEY` talab qiladi. stdio transport lokal ishonchli jarayon
+bo'lgani uchun to'liq huquqlar bilan ishlaydi.
 """
 
 from __future__ import annotations
@@ -21,6 +26,7 @@ django.setup()
 from mcp.server.fastmcp import FastMCP
 
 from mcpbridge import tools
+from mcpbridge.auth import TIER_ADMIN, BearerAuthMiddleware, check_config, set_tier
 
 DEFAULT_PORT = 8001
 DEFAULT_PATH = "/mcp/"
@@ -100,15 +106,32 @@ def get_question(question_id: int, include_answers: bool = False) -> Optional[di
     return tools.get_question(question_id, include_answers=include_answers)
 
 
-def _run(transport: str = "streamable-http", host: str = "0.0.0.0", port: int = DEFAULT_PORT, path: str = DEFAULT_PATH) -> None:
+def build_app(path: str = DEFAULT_PATH):
+    """Build the Streamable HTTP ASGI app wrapped in bearer-token auth."""
+    check_config()
+    app = mcp.streamable_http_app()
+    # Well-known liveness path stays open so container/orchestrator probes work.
+    return BearerAuthMiddleware(app, exempt_paths={"/healthz", path.rstrip("/") + "/healthz"})
+
+
+def _run(
+    transport: str = "streamable-http",
+    host: str = "0.0.0.0",
+    port: int = DEFAULT_PORT,
+    path: str = DEFAULT_PATH,
+) -> None:
     if transport == "stdio":
+        # A local, single-user process: run with full tool privileges.
+        set_tier(TIER_ADMIN)
         mcp.run(transport="stdio")
         return
+
+    import uvicorn
+
+    set_tier(TIER_ADMIN)
     mcp.settings.host = host
     mcp.settings.port = port
-    mcp.settings.mount_path = path
-    mcp.settings.streamable_http_path = path
-    mcp.run(transport="streamable-http", mount_path=path)
+    uvicorn.run(build_app(path), host=host, port=port, log_level="info")
 
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError, transaction
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
@@ -52,6 +53,19 @@ class RegisterSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 {"role": "Ommaviy ro'yxatdan o'tishda faqat 'abituriyent' roli ruxsat etiladi."}
             )
+        # Same policy as ChangePasswordSerializer. Skipping this on registration is
+        # what let a one-character password through. Re-key the Django messages
+        # onto "password" so the register form can show them next to the field.
+        candidate = User(
+            username=attrs.get("username", ""),
+            email=attrs.get("email", ""),
+            first_name=attrs.get("first_name", ""),
+            last_name=attrs.get("last_name", ""),
+        )
+        try:
+            validate_password(attrs.get("password"), candidate)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError({"password": list(exc.messages)})
         return attrs
 
     def create(self, validated_data):
@@ -103,5 +117,10 @@ class ChangePasswordSerializer(serializers.Serializer):
         return value
 
     def validate_new_password(self, value):
-        validate_password(value, self.context["request"].user)
+        # Django raises its own ValidationError, which DRF would not turn into a
+        # 400 — re-key it onto the field instead of surfacing a 500.
+        try:
+            validate_password(value, self.context["request"].user)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(list(exc.messages))
         return value

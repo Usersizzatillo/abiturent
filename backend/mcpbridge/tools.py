@@ -7,11 +7,18 @@ xavfsiz (javob yashirilgan) kirish imkonini beradi.
 
 include_answers=True faqat o'qituvchi/admin foydalanishi uchun javob
 variantini ochadi. Boshqa holatda to'g'ri javob hech qachon chiqmaydi.
+
+include_answers so'rovi `mcpbridge.auth.require_admin()` orqali himoyalangan:
+faqat MCP_ADMIN_API_KEY bilan autentifikatsiya qilingan mijoz uchun bajariladi,
+aks holda McpAuthError chiqadi. Shu bilan birga `get_question` faqat e'lon
+qilingan va faol savollarni qaytaradi (qoralama/arxivlangan savollar yashiriladi).
 """
 
 from __future__ import annotations
 
 from typing import Optional
+
+from .auth import require_admin
 
 
 def _subtopic_dict(st) -> dict:
@@ -98,7 +105,8 @@ def _university_dict(u, include_directions: bool = False) -> dict:
 
 def _question_dict(q, include_answers: bool = False) -> dict:
     options = []
-    for o in q.options.all():
+    ordered_options = list(q.options.all())
+    for o in ordered_options:
         item = {
             "id": o.id,
             "text": o.text_uz or o.text_ru or o.text_en,
@@ -130,7 +138,7 @@ def _question_dict(q, include_answers: bool = False) -> dict:
         data["subtopic"] = {"id": q.subtopic.id, "name": q.subtopic.name_uz}
     if include_answers:
         data["correct_indexes"] = [
-            idx for idx, o in enumerate(q.options.all()) if o.is_correct
+            idx for idx, o in enumerate(ordered_options) if o.is_correct
         ]
         data["explanation"] = q.explanation_uz or q.explanation_ru
     return data
@@ -228,6 +236,8 @@ def search_questions(
     if difficulty is not None:
         qs = qs.filter(difficulty=int(difficulty))
     limit = max(1, min(int(limit), 100))
+    if include_answers:
+        require_admin("include_answers")
     return [
         _question_dict(q, include_answers=include_answers)
         for q in qs.select_related("subject", "topic", "subtopic")[:limit]
@@ -238,11 +248,19 @@ def get_question(question_id: int, include_answers: bool = False) -> Optional[di
     from questions.models import Question
 
     try:
-        q = Question.objects.select_related("subject", "topic", "subtopic").get(
-            id=int(question_id)
-        )
-    except (Question.DoesNotExist, TypeError, ValueError):
+        qid = int(question_id)
+    except (TypeError, ValueError):
         return None
+    # Only published, active questions are readable over MCP: draft and
+    # archived questions are teacher work-in-progress and must stay private.
+    qs = Question.objects.filter(
+        is_active=True, status=Question.Status.PUBLISHED
+    ).select_related("subject", "topic", "subtopic")
+    q = qs.filter(id=qid).first()
+    if q is None:
+        return None
+    if include_answers:
+        require_admin("include_answers")
     return _question_dict(q, include_answers=include_answers)
 
 

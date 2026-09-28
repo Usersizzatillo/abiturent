@@ -20,6 +20,8 @@ ma'lumotlarini boshqaruvchi zamonaviy platforma.
 ├── backend/          # Django REST API
 │   ├── config/       # settings / urls
 │   ├── core/         # tayanch app (health, izoh)
+│   ├── premium/      # obuna tariflari + kunlik sessiya limiti
+│   ├── gamification/ # XP, daraja va nishonlar (badge)
 │   ├── telegrambot/  # Telegram admin bot (bildirishnomalar + statistika)
 │   └── requirements.txt
 ├── frontend/         # Next.js ilova
@@ -46,6 +48,18 @@ python manage.py runserver 0.0.0.0:8000
 ```
 
 Healthcheck: `GET http://127.0.0.1:8000/api/health/`
+
+Seed data (idempotent, kerak bo'lganda qayta ishga tushiriladi):
+
+```bash
+python manage.py seed_catalog       # 13 ta DTM fani
+python manage.py seed_universities  # universitetlar va yo'nalishlar
+python manage.py seed_premium       # bepul va PRO tariflar
+python manage.py seed_badges        # 12 ta yutuq nishoni
+```
+
+> `seed_premium` va `seed_badges` **majburiy** — ularsiz `/premium` sahifasi
+> bo'sh, nishonlar esa umuman yaratilmaydi. CI/CD deploy avtomatik bajaradi.
 
 ### Telegram bot
 
@@ -100,12 +114,47 @@ npm run dev
 
 Ochiq: `http://localhost:3000` (avtomatik `/uz` ga yo'naltiriladi).
 
+Production build (`output: "standalone"`):
+
+```bash
+npm run build   # next build + static/public ni .next/standalone ichiga ko'chiradi
+npm start       # node .next/standalone/server.js
+```
+
+> `next start` standalone build bilan mos emas va xato beradi — shuning uchun
+> `npm start` to'g'ridan-to'g'ri `server.js` ni ishga tushiradi. Bu Dockerfile
+> bilan bir xil bajariladi (`CMD ["node", "server.js"]`).
+
 ### 3. Docker (to'liq stack)
 
 ```bash
 cp .env.example .env   # keyin kerakli qiymatlarni o'zgartiring
 docker compose up -d --build
 ```
+
+`docker compose` `MCP_API_KEY` ni talab qiladi — `.env` da belgilanmagan bo'lsa
+stack ishga tushmaydi. Qo'shimchacha, PostgreSQL o'zi `POSTGRES_DB` orqali
+yaratiladi; qo'lda o'rnatish uchun `psql -U postgres -f setup_db.sql`.
+
+## MCP bridge autentifikatsiyasi
+
+MCP HTTP transporti ochiq emas — har bir sorov `Authorization` header talab qiladi:
+
+| Kalit | Ruxsat |
+| ----- | ------ |
+| `MCP_API_KEY` | Savol qidirish va olish (`include_answers` siz) |
+| `MCP_ADMIN_API_KEY` | Hammasi, jumladan `include_answers=true` (javob kaliti) |
+
+```bash
+curl -H "Authorization: Bearer $MCP_API_KEY" http://localhost:8001/mcp/
+```
+
+- `MCP_API_KEY` bo'lmagan/yoki bo'sh bo'lsa — **barcha** sorovlar 503 bilan
+  rad etiladi (fail-closed), MCP xavfsiz tarzda ochiq qolmaydi.
+- Noto'g'ri yoki yetishmaydigan token — 401.
+- Draft/arxiv/o'chirilgan savollar MCP orqali hech qachon qaytarilmaydi.
+- Lokal `stdio` transport ishonchli hisoblanadi va admin darajasida ishlaydi.
+- Nginx `/mcp/` location'ida `Authorization` header proxy qilinishi shart.
 
 ## Production deploy
 
@@ -161,7 +210,11 @@ Kunlik statistika (har kuni 09:00):
 - PHASE 6 (Analytics): ✅ `GET /api/stats/summary/` — accuracy, streak, weekly activity, subject breakdown, weak topics, recent sessions; `GET /api/sessions/` list; Dashboard real statistika asosida (Eduva uslubi), subjects katalog izlash + premium kartalar, auth split-screen (Figma mos template'laridan qilingan dizayn upgrade)
 - PHASE 7 (Universities): ✅ `universities` app — University/Direction modellari + admin + seed_universities + `GET /api/universities/`, `/{slug}/`, `/api/directions/?subject=`; universite katalogi: izlash, fan kesimida filter, ochiluvchi yo'nalishlar (fanlar + davomiylik)
 - PHASE 8 (Mock exam): ✅ Sinov imtihoni oqimi — fan/count/vaqt tanlash, taymer (avtomatik yakunlanadi), bepul navigatsiya (`/sessions/{id}/questions/` javob yashirilgan), yakunlanishda score ring + har bir savol bo'yicha tahlil, natijalar tarixi (`/sessions/` exam filter)
-- PHASE 9 (MCP): ✅ `mcpbridge` — Streamable HTTP transport `/mcp/`, 11 tool test PASS, docker `mcp` servisi + nginx proxy
-- Backend test: **73/73 PASS** (accounts 8, catalog 7, core 4, questions 9, practice 18, universities 6, telegrambot 10, MCP 11)
+- PHASE 9 (MCP): ✅ `mcpbridge` — Streamable HTTP transport `/mcp/`, 26 test PASS, docker `mcp` servisi + nginx proxy. HTTP transport `Authorization: Bearer` bilan himoyalangan (2 ta daraja: o'qish / admin)
+- PHASE 10 (Premium): ✅ `premium` app — `SubscriptionPlan`/`Subscription` + `GET /api/premium/plans|subscription/`, `POST /api/premium/subscribe/`, bepul tarif kuniga 3 sessiya, PRO cheksiz. Limit `POST /api/sessions/` da 402 bilan to'siladi va frontenda Paywall ko'rinishida chiqadi; `/premium` sahifasi (tariflar + joriy holat)
+- PHASE 11 (Gamification): ✅ `gamification` app — XP, daraja (200 XP/daftar), 12 ta nishon + `seed_badges`; `GET /api/gamification/badges/`, `POST .../badges/check/`. Sessiya yakunlanganda nishonlar avtomatik beriladi (`new_badges` hisobotda) va `/achievements` sahifasida ko'rsatiladi
+- Import/export: ✅ `questions/importexport.py` + `manage.py import_questions` / `export_questions` (CSV, `--create-missing`, `--status` filtri), 6 test PASS
+- Backend test: **127/127 PASS** (accounts 11, catalog 12, core 4, gamification 6, mcpbridge 26, practice 21, premium 9, questions 22, telegrambot 10, universities 6)
+- Frontend: ✅ `npm run lint` toza, `npm run build` muvaffaqiyatli (42 sahifa); uz/ru/en tarjimalar teng, `/premium` va `/achievements` routelari
 - Landing: ✅ 3 ta theme-aware SVG illyustratsiya, aurora/grid hero, scroll reveal
 - API indeks: ✅ `GET /api/` — barcha endpointlar katalogi (resolve testi bilan himoyalangan); security header'lar (CSP/RP/Permissions-Policy)

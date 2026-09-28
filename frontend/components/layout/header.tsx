@@ -35,6 +35,12 @@ export function Header() {
           <Link href="/universities" className="transition-colors hover:text-foreground">
             {t("universities")}
           </Link>
+          <Link
+            href="/premium"
+            className="transition-colors hover:text-foreground"
+          >
+            {t("premium")}
+          </Link>
         </nav>
 
         <div className="flex items-center gap-2">

@@ -76,6 +76,8 @@ INSTALLED_APPS = [
     "core",
     "questions",
     "practice",
+    "premium",
+    "gamification",
     "universities",
     "telegrambot",
     "mcpbridge",
@@ -280,3 +282,13 @@ TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
 TELEGRAM_ALLOWED_CHAT_IDS = env_list("TELEGRAM_ALLOWED_CHAT_IDS", "")
 TELEGRAM_WEBHOOK_SECRET = os.environ.get("TELEGRAM_WEBHOOK_SECRET", "")
 TELEGRAM_WEBHOOK_HOST = os.environ.get("TELEGRAM_WEBHOOK_HOST", "")
+
+# ---- MCP bridge (mcpbridge) --------------------------------------------------
+# The bridge is published over HTTP through nginx and serves the question bank,
+# so both keys fail closed: an empty key rejects every request instead of
+# allowing anonymous reads.
+#
+#   MCP_API_KEY       — required for any Streamable HTTP request
+#   MCP_ADMIN_API_KEY — additionally required for include_answers=True
+MCP_API_KEY = os.environ.get("MCP_API_KEY", "")
+MCP_ADMIN_API_KEY = os.environ.get("MCP_ADMIN_API_KEY", "")

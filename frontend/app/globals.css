@@ -22,21 +22,21 @@
   --border: #e2e8f0;
   --border-strong: #cbd5e1;
 
-  /* Brand — Cobalt interactive driver */
-  --primary: #1d4ed8;
-  --primary-hover: #1e40af;
+  /* Brand — Indigo interactive driver */
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
   --primary-foreground: #ffffff;
-  --primary-soft: #eff6ff;
-  --primary-muted: #bfdbfe;
+  --primary-soft: #eef2ff;
+  --primary-muted: #c7d2fe;
 
   /* Institutional Deep Academic Navy (headers / structural panels) */
   --navy: #0b192c;
   --navy-hover: #1e3e62;
   --navy-soft: #e9eef4;
 
-  /* Tertiary Academic Teal */
-  --teal: #0d9488;
-  --teal-soft: #ccfbf1;
+  /* Tertiary Academic Violet */
+  --teal: #7c3aed;
+  --teal-soft: #ede9fe;
 
   /* Warm amber accent (warning-adjacent, streaks, glows) */
   --accent: #d97706;
@@ -49,11 +49,11 @@
   --warning-soft: #fef3c7;
   --danger: #dc2626;
   --danger-soft: #fef2f2;
-  --info: #0d9488;
-  --info-soft: #ccfbf1;
+  --info: #7c3aed;
+  --info-soft: #ede9fe;
 
   /* Focus ring */
-  --ring: #1d4ed8;
+  --ring: #4f46e5;
 
   /* Shadows — cool, diffused academic elevation */
   --shadow-card: 0 1px 2px 0 rgb(11 25 44 / 0.05);
@@ -79,18 +79,18 @@
   --border: #1e2a4b;
   --border-strong: #2d3b66;
 
-  --primary: #3b66ff;
-  --primary-hover: #5a7dff;
-  --primary-foreground: #ffffff;
-  --primary-soft: #17214a;
-  --primary-muted: #26335e;
+  --primary: #818cf8;
+  --primary-hover: #a5b4fc;
+  --primary-foreground: #0b1020;
+  --primary-soft: #1e1b4b;
+  --primary-muted: #312e81;
 
   --navy: #0b192c;
   --navy-hover: #1e3657;
   --navy-soft: #121f36;
 
-  --teal: #2dd4bf;
-  --teal-soft: #0d2b2a;
+  --teal: #a78bfa;
+  --teal-soft: #2e1065;
 
   --accent: #fbbf24;
   --accent-soft: #2b2310;
@@ -101,10 +101,10 @@
   --warning-soft: #2b2310;
   --danger: #f97066;
   --danger-soft: #2c1614;
-  --info: #2dd4bf;
-  --info-soft: #0d2b2a;
+  --info: #a78bfa;
+  --info-soft: #2e1065;
 
-  --ring: #3b66ff;
+  --ring: #818cf8;
 
   --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.4);
   --shadow-raised: 0 8px 20px -6px rgb(0 0 0 / 0.5);
@@ -117,7 +117,7 @@
    Tailwind token mapping
    ============================================================= */
 @theme inline {
-  --font-sans: var(--font-inter), var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-instrument), ui-serif, Georgia, serif;
   --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
 
@@ -186,7 +186,7 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -196,10 +196,11 @@ body {
   color: var(--foreground);
 }
 
-/* Structural headlines — Plus Jakarta Sans (Stitch Academic Trust) */
+/* Structural headlines — Inter (tight display tracking) */
 h1, h2, h3, h4,
 .section-title, .text-h2, .text-display, .text-display-sm {
-  font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.03em;
 }
 
 /* Focus visibility — accessibility */

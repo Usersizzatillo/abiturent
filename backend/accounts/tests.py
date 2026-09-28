@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -9,6 +10,9 @@ class AuthApiTests(TestCase):
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)
         self.csrf_url = "/api/auth/csrf/"
+        # Auth endpoints are rate limited (register is 5/hour); the throttle cache
+        # outlives a single test, so reset it or unrelated tests 429 each other.
+        cache.clear()
 
     def _csrf_token(self):
         self.client.get(self.csrf_url)
@@ -43,6 +47,47 @@ class AuthApiTests(TestCase):
             {"username": "dupuser", "password": "StrongPass123!"},
         )
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_weak_password_rejected(self):
+        # Django's validator set: too short, all-numeric, and a well-known common
+        # password. The one-character case is the regression that mattered.
+        for weak in ("1", "12345678", "password", "qwerty123"):
+            with self.subTest(password=weak):
+                res = self._post(
+                    "/api/auth/register/",
+                    {"username": f"weak{len(weak)}x", "password": weak},
+                )
+                self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+                self.assertIn("password", res.data)
+        self.assertEqual(User.objects.filter(username__startswith="weak").count(), 0)
+
+    def test_password_similar_to_username_rejected(self):
+        res = self._post(
+            "/api/auth/register/",
+            {"username": "sardor123", "password": "sardor123!"},
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("password", res.data)
+
+    def test_change_password_rejects_weak_password(self):
+        User.objects.create_user(username="kuchsiz", password="old-pass-1")
+        self._post(
+            "/api/auth/login/", {"username": "kuchsiz", "password": "old-pass-1"}
+        )
+        res = self._post(
+            "/api/auth/change-password/",
+            {"old_password": "old-pass-1", "new_password": "1"},
+        )
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("new_password", res.data)
+        # The old password must still work: a rejected change must not lock the
+        # user out.
+        self.assertEqual(
+            self._post(
+                "/api/auth/login/", {"username": "kuchsiz", "password": "old-pass-1"}
+            ).status_code,
+            status.HTTP_200_OK,
+        )
 
     def test_login_and_logout_flow(self):
         User.objects.create_user(username="vali", password="StrongPass123!")

@@ -1,4 +1,4 @@
-from django.db.models import Count, Q
+from django.db.models import Count, Prefetch, Q
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
@@ -8,6 +8,20 @@ from .models import Subject, Topic
 from .serializers import SubjectDetailSerializer, SubjectSerializer, TopicSerializer
 
 PUBLISHED = Q(questions__is_active=True) & Q(questions__status="published")
+
+
+def _annotated_topics():
+    """Active topics with their published question count already resolved.
+
+    TopicSerializer reads ``_question_count`` off the instance, so any queryset
+    that is *not* annotated silently reports 0 questions per topic.
+    """
+    return (
+        Topic.active.all()
+        .annotate(_question_count=Count("questions", filter=PUBLISHED, distinct=True))
+        .prefetch_related("subtopics")
+        .order_by("sort_order", "id")
+    )
 
 
 class SubjectViewSet(viewsets.ReadOnlyModelViewSet):
@@ -28,24 +42,21 @@ class SubjectViewSet(viewsets.ReadOnlyModelViewSet):
                 _question_count=Count("questions", filter=PUBLISHED, distinct=True),
             )
             .order_by("sort_order", "id")
-            .prefetch_related("topics__subtopics")
+            .prefetch_related(Prefetch("topics", queryset=_annotated_topics()))
         )
 
     @action(detail=True, methods=["get"], url_path="topics")
-    def topics(self, request, pk=None):
+    def topics(self, request, slug=None):
+        # lookup_field is "slug", so the detail route passes the slug as the
+        # keyword argument name, not "pk".
         subject = self.get_object()
-        topics = (
-            Topic.active.filter(subject=subject)
-            .prefetch_related("subtopics")
-            .annotate(
-                _question_count=Count("questions", filter=PUBLISHED, distinct=True)
-            )
-            .order_by("sort_order", "id")
+        return Response(
+            TopicSerializer(
+                _annotated_topics().filter(subject=subject),
+                many=True,
+                context={"request": request},
+            ).data
         )
-        serializer = TopicSerializer(
-            topics, many=True, context={"request": request}
-        )
-        return Response(serializer.data)
 
 
 class TopicViewSet(viewsets.ReadOnlyModelViewSet):
@@ -54,6 +65,4 @@ class TopicViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        return Topic.active.all().prefetch_related("subtopics").order_by(
-            "sort_order", "id"
-        )
+        return _annotated_topics()

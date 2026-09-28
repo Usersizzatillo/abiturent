@@ -25,6 +25,7 @@ next-env.d.ts
 # Logs
 *.log
 start*.log
+*build-log*.txt
 
 # OS / Editor
 .DS_Store

@@ -62,6 +62,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-abiturend}
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
+      # Fail closed: the bridge refuses every request unless a key is present.
+      MCP_API_KEY: ${MCP_API_KEY:?MCP_API_KEY must be set in .env}
+      MCP_ADMIN_API_KEY: ${MCP_ADMIN_API_KEY:-}
     expose:
       - "8001"
 

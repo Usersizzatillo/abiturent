@@ -8,6 +8,8 @@ from rest_framework.views import APIView
 
 from catalog.models import Subject, Topic
 
+from gamification.services import level_info
+
 from .models import PracticeAnswer, PracticeSession
 from .serializers import SessionListSerializer
 
@@ -152,6 +154,7 @@ class StatsSummaryView(APIView):
             "accuracy": accuracy,
             "current_score": current_score,
             "streak": streak,
+            "level": level_info(correct * 10),
             "weekly_activity": weekly_activity,
             "subject_breakdown": subject_breakdown,
             "weak_topics": weak_topics,

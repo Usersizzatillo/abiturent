@@ -84,20 +84,107 @@ class PracticeApiTests(APITestCase):
         self.assertFalse(res.data["is_correct"])
         self.assertEqual(res.data["correct_count"], 0)
 
-    def test_cannot_answer_same_question_twice(self):
+    def test_can_change_answer_before_finish(self):
+        """Exam mode lets a student revisit a question and pick another option."""
         session = self._start().data
-        option_id = self.q1.options.get(is_correct=True).id
-        self.client.post(
-            f"/api/sessions/{session['id']}/answer/",
-            {"question_id": self.q1.id, "option_id": option_id},
-            format="json",
+        wrong_id = self.q1.options.get(is_correct=False).id
+        correct_id = self.q1.options.get(is_correct=True).id
+        url = f"/api/sessions/{session['id']}/answer/"
+        self.assertEqual(
+            self.client.post(
+                url,
+                {"question_id": self.q1.id, "option_id": wrong_id},
+                format="json",
+            ).status_code,
+            status.HTTP_200_OK,
         )
         res = self.client.post(
-            f"/api/sessions/{session['id']}/answer/",
-            {"question_id": self.q1.id, "option_id": option_id},
+            url,
+            {"question_id": self.q1.id, "option_id": correct_id},
             format="json",
         )
-        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertTrue(res.data["is_correct"])
+        # Switching from wrong to right must fix *both* counters, not just add to
+        # the correct one.
+        self.assertEqual(res.data["correct_count"], 1)
+        session_row = PracticeSession.objects.get(pk=session["id"])
+        self.assertEqual(session_row.correct_answers, 1)
+        self.assertEqual(session_row.incorrect_answers, 0)
+        self.assertEqual(session_row.progress_index, 1)
+        self.assertEqual(
+            PracticeAnswer.objects.get(
+                session=session_row, question=self.q1
+            ).selected_option_id,
+            correct_id,
+        )
+
+    def test_answer_question_without_correct_option(self):
+        """A question with no correct option must not 500 the student."""
+        broken = Question.objects.create(
+            subject=self.subject,
+            text_uz="Javobsiz savol",
+            status=Question.Status.PUBLISHED,
+        )
+        QuestionOption.objects.create(
+            question=broken, text_uz="A", is_correct=False, sort_order=0
+        )
+        QuestionOption.objects.create(
+            question=broken, text_uz="B", is_correct=False, sort_order=1
+        )
+        session = PracticeSession.objects.create(
+            user=self.user,
+            subject=self.subject,
+            question_count=1,
+        )
+        PracticeAnswer.objects.create(session=session, question=broken)
+        res = self.client.post(
+            f"/api/sessions/{session.id}/answer/",
+            {"question_id": broken.id, "option_id": broken.options.first().id},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertFalse(res.data["is_correct"])
+        self.assertIsNone(res.data["correct_option_id"])
+
+    def _manual_session(self, questions, mode="practice"):
+        session = PracticeSession.objects.create(
+            user=self.user,
+            subject=self.subject,
+            mode=mode,
+            question_count=len(questions),
+        )
+        session.answers.bulk_create(
+            [PracticeAnswer(session=session, question=q) for q in questions]
+        )
+        return session
+
+    def test_current_ignores_answers_given_in_another_session(self):
+        """Answering a question once must not hide it from the student's other
+        session — the same question can legitimately sit in several of them."""
+        answered_session = self._manual_session([self.q1])
+        other_session = self._manual_session([self.q1, self.q2])
+        self.client.post(
+            f"/api/sessions/{answered_session.id}/answer/",
+            {
+                "question_id": self.q1.id,
+                "option_id": self.q1.options.get(is_correct=True).id,
+            },
+            format="json",
+        )
+        res = self.client.get(f"/api/sessions/{other_session.id}/current/")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data["question"]["id"], self.q1.id)
+        self.assertEqual(res.data["unanswered_count"], 2)
+
+    def test_start_returns_first_unanswered_question(self):
+        partial = self._manual_session([self.q1, self.q2])
+        PracticeAnswer.objects.filter(session=partial, question=self.q1).update(
+            selected_option=self.q1.options.get(is_correct=True).id, is_correct=True
+        )
+        res = self.client.get(f"/api/sessions/{partial.id}/")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertNotIn("current_question", res.data)
 
     def test_finish_reports_score(self):
         session = self._start().data

@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.db.models import Count, F, Max, Q, Sum
 from django.utils import timezone
 from rest_framework import status, viewsets
@@ -10,6 +11,8 @@ from rest_framework.views import APIView
 
 from questions.models import Question, QuestionOption
 from questions.serializers import QuestionFullSerializer
+
+from premium import services as premium_services
 
 from .models import PracticeAnswer, PracticeSession
 from .serializers import (
@@ -71,6 +74,21 @@ class PracticeSessionViewSet(viewsets.ModelViewSet):
         )
 
     def create(self, request, *args, **kwargs):
+        # Free tier is capped at a handful of sessions per day; PRO is unlimited.
+        if request.user.role != User.Role.TEACHER and not request.user.is_staff:
+            allowed, remaining = premium_services.can_start_session(request.user)
+            if not allowed:
+                return Response(
+                    {
+                        "detail": (
+                            "Kunlik bepul sessiya limiti tugadi. Ertaga qayta urinib "
+                            "ko'ring yoki premium tarifga o'ting."
+                        ),
+                        "premium_required": True,
+                        "remaining_sessions_today": 0,
+                    },
+                    status=status.HTTP_402_PAYMENT_REQUIRED,
+                )
         serializer = PracticeStartSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
@@ -106,10 +124,38 @@ class PracticeSessionViewSet(viewsets.ModelViewSet):
         session = self.get_object()
         return Response(self._session_payload(session))
 
-    def _session_payload(self, session, first_question=False):
-        questions = Question.objects.filter(practice_answers__session=session).order_by(
-            "practice_answers__id"
+    def _first_unanswered(self, session):
+        """The next question to serve, scoped strictly to this session.
+
+        Looking at ``Question`` and excluding anything answered anywhere leaks
+        across sessions: the same question can legitimately sit in two of a
+        student's sessions, and answering it in one used to hide it in the other.
+        """
+        return (
+            session.answers.filter(selected_option__isnull=True)
+            .select_related("question")
+            .order_by("id")
+            .first()
         )
+
+    def _recompute_progress(self, session):
+        """Recompute the session counters from the answers, both directions.
+
+        Only bumping the counter matching the new answer leaves the other one
+        stale as soon as a student changes an answer (wrong -> right).
+        """
+        answered = session.answers.filter(selected_option__isnull=False)
+        correct = answered.filter(is_correct=True).count()
+        incorrect = answered.filter(is_correct=False).count()
+        session.correct_answers = correct
+        session.incorrect_answers = incorrect
+        session.progress_index = answered.count()
+        session.save(
+            update_fields=["correct_answers", "incorrect_answers", "progress_index"]
+        )
+        return correct
+
+    def _session_payload(self, session, first_question=False):
         payload = {
             "id": session.id,
             "mode": session.mode,
@@ -124,9 +170,9 @@ class PracticeSessionViewSet(viewsets.ModelViewSet):
             "finished_at": session.finished_at.isoformat() if session.finished_at else None,
         }
         if first_question:
-            q = questions.first()
+            answer = self._first_unanswered(session)
             payload["current_question"] = (
-                PracticeQuestionSerializer(q).data if q else None
+                PracticeQuestionSerializer(answer.question).data if answer else None
             )
         return payload
 
@@ -137,17 +183,15 @@ class PracticeSessionViewSet(viewsets.ModelViewSet):
             return Response(
                 {"detail": "Sessiya yakunlangan."}, status=status.HTTP_400_BAD_REQUEST
             )
-        question = (
-            Question.objects.filter(practice_answers__session=session)
-            .exclude(practice_answers__selected_option__isnull=False)
-            .order_by("practice_answers__id")
-            .first()
-        )
-        unanswered = session.answers.filter(selected_option__isnull=True).count()
+        answer = self._first_unanswered(session)
         return Response(
             {
-                "question": PracticeQuestionSerializer(question).data if question else None,
-                "unanswered_count": unanswered,
+                "question": (
+                    PracticeQuestionSerializer(answer.question).data if answer else None
+                ),
+                "unanswered_count": session.answers.filter(
+                    selected_option__isnull=True
+                ).count(),
             }
         )
 
@@ -180,37 +224,29 @@ class PracticeSessionViewSet(viewsets.ModelViewSet):
                 {"option_id": "Noto'g'ri variant."}, status=status.HTTP_400_BAD_REQUEST
             )
         is_correct = option.is_correct
-        answer.selected_option = option
-        answer.is_correct = is_correct
-        answer.save()
-        if is_correct:
-            session.correct_answers = session.answers.filter(
-                selected_option__isnull=False, is_correct=True
-            ).count()
-        else:
-            session.incorrect_answers = session.answers.filter(
-                selected_option__isnull=False, is_correct=False
-            ).count()
-        session.progress_index = session.answers.filter(
-            selected_option__isnull=False
-        ).count()
-        session.save(update_fields=["correct_answers", "incorrect_answers", "progress_index"])
-        correct_id = answer.question.options.filter(is_correct=True).first().id
+        with transaction.atomic():
+            answer.selected_option = option
+            answer.is_correct = is_correct
+            answer.save()
+            correct_count = self._recompute_progress(session)
+        # A question can legitimately end up without a correct option (bad import,
+        # teacher edit). Report that as "no answer key" instead of 500-ing.
+        correct_option = answer.question.options.filter(is_correct=True).first()
         if session.mode == PracticeSession.Mode.EXAM:
             return Response(
                 {
-                    "correct_count": session.correct_answers,
+                    "correct_count": correct_count,
                     "total_count": session.question_count,
                 }
             )
         result = PracticeAnswerResultSerializer(
             {
                 "is_correct": is_correct,
-                "correct_option_id": correct_id,
+                "correct_option_id": correct_option.id if correct_option else None,
                 "explanation_uz": answer.question.explanation_uz,
                 "explanation_ru": answer.question.explanation_ru,
                 "explanation_en": answer.question.explanation_en,
-                "correct_count": session.correct_answers,
+                "correct_count": correct_count,
                 "total_count": session.question_count,
             }
         )
@@ -227,7 +263,22 @@ class PracticeSessionViewSet(viewsets.ModelViewSet):
         session.status = PracticeSession.Status.FINISHED
         session.finished_at = timezone.now()
         session.save(update_fields=["status", "finished_at"])
-        return self._finished_report(session)
+        # Gamification: persist any badges the finished session unlocks.
+        from gamification.services import sync_badges
+
+        new_badges = sync_badges(request.user)
+        report = self._finished_report(session)
+        report.data["new_badges"] = [
+            {
+                "code": b.code,
+                "name_uz": b.name_uz,
+                "name_ru": b.name_ru,
+                "name_en": b.name_en,
+                "icon": b.icon,
+            }
+            for b in new_badges
+        ]
+        return report
 
     @action(detail=True, methods=["get"], url_path="report", url_name="report")
     def report(self, request, pk=None):

@@ -9,6 +9,8 @@ urlpatterns = [
     path("", include("catalog.urls")),
     path("", include("questions.urls")),
     path("", include("practice.urls")),
+    path("premium/", include("premium.urls")),
+    path("gamification/", include("gamification.urls")),
     path("", include("universities.urls")),
     path("", api_root, name="api-root"),
 ]
