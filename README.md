@@ -214,7 +214,7 @@ Kunlik statistika (har kuni 09:00):
 - PHASE 10 (Premium): ✅ `premium` app — `SubscriptionPlan`/`Subscription` + `GET /api/premium/plans|subscription/`, `POST /api/premium/subscribe/`, bepul tarif kuniga 3 sessiya, PRO cheksiz. Limit `POST /api/sessions/` da 402 bilan to'siladi va frontenda Paywall ko'rinishida chiqadi; `/premium` sahifasi (tariflar + joriy holat)
 - PHASE 11 (Gamification): ✅ `gamification` app — XP, daraja (200 XP/daftar), 12 ta nishon + `seed_badges`; `GET /api/gamification/badges/`, `POST .../badges/check/`. Sessiya yakunlanganda nishonlar avtomatik beriladi (`new_badges` hisobotda) va `/achievements` sahifasida ko'rsatiladi
 - Import/export: ✅ `questions/importexport.py` + `manage.py import_questions` / `export_questions` (CSV, `--create-missing`, `--status` filtri), 6 test PASS
-- Backend test: **127/127 PASS** (accounts 11, catalog 12, core 4, gamification 6, mcpbridge 26, practice 21, premium 9, questions 22, telegrambot 10, universities 6)
+- Backend test: **130/130 PASS** (accounts 11, catalog 12, core 4, gamification 6, mcpbridge 26, practice 21, premium 9, questions 22, telegrambot 10, universities 9)
 - Frontend: ✅ `npm run lint` toza, `npm run build` muvaffaqiyatli (42 sahifa); uz/ru/en tarjimalar teng, `/premium` va `/achievements` routelari
 - Landing: ✅ 3 ta theme-aware SVG illyustratsiya, aurora/grid hero, scroll reveal
 - API indeks: ✅ `GET /api/` — barcha endpointlar katalogi (resolve testi bilan himoyalangan); security header'lar (CSP/RP/Permissions-Policy)

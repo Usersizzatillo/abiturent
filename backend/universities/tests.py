@@ -56,6 +56,21 @@ class UniversityApiTests(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data["count"], 1)
 
+    def test_directions_filter_by_subject_slug(self):
+        res = self.client.get("/api/directions/?subject=matematika")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data["count"], 1)
+
+    def test_directions_filter_by_unknown_subject_is_empty_not_500(self):
+        res = self.client.get("/api/directions/?subject=nope")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data["count"], 0)
+
+    def test_directions_filter_by_university_id(self):
+        res = self.client.get(f"/api/directions/?university={self.uni.id}")
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data["count"], 1)
+
     def test_404_unknown_university(self):
         res = self.client.get("/api/universities/nonexistent/")
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)

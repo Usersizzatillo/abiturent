@@ -51,8 +51,18 @@ class DirectionViewSet(viewsets.ReadOnlyModelViewSet):
         qs = Direction.active.all().select_related("university").prefetch_related("subjects")
         university = self.request.query_params.get("university")
         if university:
-            qs = qs.filter(university__slug=university)
+            # Accept both the slug (what the UI sends) and a raw id.
+            if university.isdigit():
+                qs = qs.filter(university_id=int(university))
+            else:
+                qs = qs.filter(university__slug=university)
         subject = self.request.query_params.get("subject")
         if subject:
-            qs = qs.filter(subjects__id=subject)
+            # A slug used to raise ValueError (500) here; match either form so
+            # the filter is safe for any caller.
+            if subject.isdigit():
+                qs = qs.filter(subjects__id=int(subject))
+            else:
+                qs = qs.filter(subjects__slug=subject)
+            qs = qs.distinct()
         return qs.order_by("id")
